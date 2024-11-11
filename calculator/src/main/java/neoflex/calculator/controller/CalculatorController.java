@@ -24,6 +24,13 @@ public class CalculatorController {
 
     @PostMapping("/offers")
     public ResponseEntity<?> getLoanOffers(@RequestBody LoanStatementRequestDto request) {
+        int age = AgeUtils.calculateAge(request.getBirthDate(), LocalDate.now());
+
+        // Проверка возраста
+        if (age < 20 || age > 65) {
+            return ResponseEntity.status(400).body("Отказ: возраст клиента должен быть от 20 до 65 лет.");
+        }
+
         // Генерация предложений
         List<LoanOfferDto> loanOffers = loanOfferService.generateLoanOffers(request);
 

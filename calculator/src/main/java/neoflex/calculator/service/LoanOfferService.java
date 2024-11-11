@@ -16,12 +16,41 @@ import java.util.UUID;
 @Service
 public class LoanOfferService {
 
-    public List<LoanOfferDto> generateLoanOffers(LoanStatementRequestDto request) {
+    @Value("${base.interest.rate}")
+    private BigDecimal baseInterestRate;
 
+    private static final BigDecimal INSURANCE_DISCOUNT = BigDecimal.valueOf(0.03);
+    private static final BigDecimal SALARY_CLIENT_DISCOUNT = BigDecimal.valueOf(0.01);
+
+    public List<LoanOfferDto> generateLoanOffers(LoanStatementRequestDto request) {
+        List<LoanOfferDto> offers = new ArrayList<>();
+
+        offers.add(createLoanOffer(request, false, false));
+        offers.add(createLoanOffer(request, false, true));
+        offers.add(createLoanOffer(request, true, false));
+        offers.add(createLoanOffer(request, true, true));
+
+        offers.sort(Comparator.comparing(LoanOfferDto::getRate));
+        return offers;
     }
 
     private LoanOfferDto createLoanOffer(LoanStatementRequestDto request, boolean isInsuranceEnabled, boolean isSalaryClient) {
+        BigDecimal interestRate = baseInterestRate;
 
+        if (isInsuranceEnabled) {
+            interestRate = interestRate.subtract(INSURANCE_DISCOUNT);
+        }
+        if (isSalaryClient) {
+            interestRate = interestRate.subtract(SALARY_CLIENT_DISCOUNT);
+        }
+
+        BigDecimal loanAmount = request.getAmount();
+        if (isInsuranceEnabled) {
+            BigDecimal insuranceCost = loanAmount.multiply(BigDecimal.valueOf(0.01));
+            loanAmount = loanAmount.add(insuranceCost);
+        }
+
+        BigDecimal monthlyPayment = calculateMonthlyPayment(loanAmount, interestRate, request.getTerm());
 
         return new LoanOfferDto(
                 UUID.randomUUID(),
@@ -36,6 +65,10 @@ public class LoanOfferService {
     }
 
     private BigDecimal calculateMonthlyPayment(BigDecimal loanAmount, BigDecimal annualRate, int termMonths) {//Аннуитетный расчет платежа
-
+        BigDecimal monthlyRate = annualRate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
+        BigDecimal onePlusRateToPowerTerm = BigDecimal.ONE.add(monthlyRate).pow(termMonths, MathContext.DECIMAL128);
+        BigDecimal numerator = loanAmount.multiply(monthlyRate).multiply(onePlusRateToPowerTerm);
+        BigDecimal denominator = onePlusRateToPowerTerm.subtract(BigDecimal.ONE);
+        return numerator.divide(denominator, 2, RoundingMode.HALF_UP);
     }
 }
