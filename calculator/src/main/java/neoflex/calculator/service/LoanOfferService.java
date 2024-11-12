@@ -50,25 +50,34 @@ public class LoanOfferService {
             loanAmount = loanAmount.add(insuranceCost);
         }
 
-        BigDecimal monthlyPayment = calculateMonthlyPayment(loanAmount, interestRate, request.getTerm());
+        BigDecimal annuityPayment = calculateAnnuityMonthlyPayment(loanAmount, interestRate, request.getTerm());
+        BigDecimal differentiatedPayment = calculateDifferentiatedMonthlyPayment(loanAmount, interestRate, request.getTerm());
 
         return new LoanOfferDto(
                 UUID.randomUUID(),
                 request.getAmount(),
                 loanAmount,
                 request.getTerm(),
-                monthlyPayment,
+                annuityPayment,
+                differentiatedPayment,
                 interestRate,
                 isInsuranceEnabled,
                 isSalaryClient
         );
     }
 
-    private BigDecimal calculateMonthlyPayment(BigDecimal loanAmount, BigDecimal annualRate, int termMonths) {//Аннуитетный расчет платежа
+    private BigDecimal calculateAnnuityMonthlyPayment(BigDecimal loanAmount, BigDecimal annualRate, int termMonths) {//Аннуитетный расчет платежа
         BigDecimal monthlyRate = annualRate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal onePlusRateToPowerTerm = BigDecimal.ONE.add(monthlyRate).pow(termMonths, MathContext.DECIMAL128);
         BigDecimal numerator = loanAmount.multiply(monthlyRate).multiply(onePlusRateToPowerTerm);
         BigDecimal denominator = onePlusRateToPowerTerm.subtract(BigDecimal.ONE);
         return numerator.divide(denominator, 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calculateDifferentiatedMonthlyPayment(BigDecimal loanAmount, BigDecimal annualRate, int termMonths) {//Дифференцированный расчет платежа
+        BigDecimal monthlyRate = annualRate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
+        BigDecimal principalPayment = loanAmount.divide(BigDecimal.valueOf(termMonths), MathContext.DECIMAL128);
+        BigDecimal interestPayment = loanAmount.multiply(monthlyRate);
+        return principalPayment.add(interestPayment).setScale(2, RoundingMode.HALF_UP);
     }
 }

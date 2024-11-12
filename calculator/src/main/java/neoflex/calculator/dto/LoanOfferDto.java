@@ -13,7 +13,8 @@ public class LoanOfferDto {
     private BigDecimal requestedAmount;  // Сумма изначального кредита
     private BigDecimal totalAmount;      // Итоговая сумма кредита (кредит + переплата)
     private Integer term;
-    private BigDecimal monthlyPayment;   // Месячный платёж
+    private BigDecimal annuityMonthlyPayment;   // Аннуитетный платёж
+    private BigDecimal differentiatedMonthlyPayment; // Дифференцированный платёж
     private BigDecimal rate;
     private boolean isInsuranceEnabled;
     private boolean isSalaryClient;
