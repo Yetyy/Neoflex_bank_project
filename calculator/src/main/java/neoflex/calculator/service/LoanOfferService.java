@@ -1,5 +1,6 @@
 package neoflex.calculator.service;
 
+import lombok.Getter;
 import neoflex.calculator.dto.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ import static neoflex.calculator.util.AgeUtils.calculateAge;
 
 @Service
 public class LoanOfferService {
-
+    @Getter
     @Value("${base.interest.rate}")
     private BigDecimal baseInterestRate;
 
@@ -47,40 +48,61 @@ public class LoanOfferService {
         }
 
         BigDecimal loanAmount = request.getAmount();
-        if (isInsuranceEnabled) {
-            BigDecimal insuranceCost = loanAmount.multiply(BigDecimal.valueOf(0.01));
-            loanAmount = loanAmount.add(insuranceCost);
-        }
 
         BigDecimal annuityPayment = calculateAnnuityMonthlyPayment(loanAmount, interestRate, request.getTerm());
         BigDecimal differentiatedPayment = calculateDifferentiatedMonthlyPayment(loanAmount, interestRate, request.getTerm());
 
+        BigDecimal annuityTotalAmount = annuityPayment.multiply(BigDecimal.valueOf(request.getTerm()));
+        BigDecimal differentiatedTotalAmount = calculateDifferentiatedTotalAmount(loanAmount, interestRate, request.getTerm());
+
+        if (isInsuranceEnabled) {
+            BigDecimal insuranceCost = loanAmount.multiply(BigDecimal.valueOf(0.01));
+            annuityTotalAmount = annuityTotalAmount.add(insuranceCost);
+            differentiatedTotalAmount = differentiatedTotalAmount.add(insuranceCost);
+        }
+
         return new LoanOfferDto(
                 UUID.randomUUID(),
                 request.getAmount(),
-                loanAmount,
                 request.getTerm(),
                 annuityPayment,
                 differentiatedPayment,
+                annuityTotalAmount,
+                differentiatedTotalAmount,
                 interestRate,
                 isInsuranceEnabled,
                 isSalaryClient
         );
     }
 
-    private BigDecimal calculateAnnuityMonthlyPayment(BigDecimal loanAmount, BigDecimal annualRate, int termMonths) {
-        BigDecimal monthlyRate = annualRate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
+    BigDecimal calculateAnnuityMonthlyPayment(BigDecimal loanAmount, BigDecimal Rate, int termMonths) {
+        BigDecimal monthlyRate = Rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal onePlusRateToPowerTerm = BigDecimal.ONE.add(monthlyRate).pow(termMonths, MathContext.DECIMAL128);
         BigDecimal numerator = loanAmount.multiply(monthlyRate).multiply(onePlusRateToPowerTerm);
         BigDecimal denominator = onePlusRateToPowerTerm.subtract(BigDecimal.ONE);
         return numerator.divide(denominator, 2, RoundingMode.HALF_UP);
     }
 
-    private BigDecimal calculateDifferentiatedMonthlyPayment(BigDecimal loanAmount, BigDecimal annualRate, int termMonths) {
-        BigDecimal monthlyRate = annualRate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
+    BigDecimal calculateDifferentiatedMonthlyPayment(BigDecimal loanAmount, BigDecimal Rate, int termMonths) {
+        BigDecimal monthlyRate = Rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal principalPayment = loanAmount.divide(BigDecimal.valueOf(termMonths), MathContext.DECIMAL128);
         BigDecimal interestPayment = loanAmount.multiply(monthlyRate);
         return principalPayment.add(interestPayment).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calculateDifferentiatedTotalAmount(BigDecimal loanAmount, BigDecimal Rate, int termMonths) {
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal monthlyRate = Rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
+        BigDecimal principalPayment = loanAmount.divide(BigDecimal.valueOf(termMonths), MathContext.DECIMAL128);
+        BigDecimal remainingPrincipal = loanAmount;
+
+        for (int i = 0; i < termMonths; i++) {
+            BigDecimal interestPayment = remainingPrincipal.multiply(monthlyRate);
+            remainingPrincipal = remainingPrincipal.subtract(principalPayment);
+            totalAmount = totalAmount.add(principalPayment.add(interestPayment));
+        }
+
+        return totalAmount;
     }
 
     public CreditDto calculateCredit(ScoringDataDto scoringData) {
@@ -144,14 +166,14 @@ public class LoanOfferService {
             throw new IllegalArgumentException("Отказ: стаж работы менее 18 месяцев или текущий стаж менее 3 месяцев.");
         }
 
-        // Расчет аннуитетного платежа и ПСК
+        // Расчет аннуитентного платежа и ПСК
         BigDecimal annuityMonthlyPayment = calculateAnnuityMonthlyPayment(scoringData.getAmount(), rate, scoringData.getTerm());
-        BigDecimal annuityPsk = calculatePsk(scoringData.getAmount(), rate, scoringData.getTerm(), true);
+        BigDecimal annuityPsk = annuityMonthlyPayment.multiply(BigDecimal.valueOf(scoringData.getTerm()));
         List<PaymentScheduleElementDto> annuityPaymentSchedule = calculateAnnuityPaymentSchedule(scoringData.getAmount(), rate, scoringData.getTerm());
 
         // Расчет дифференцированного платежа и ПСК
         BigDecimal differentiatedMonthlyPayment = calculateDifferentiatedMonthlyPayment(scoringData.getAmount(), rate, scoringData.getTerm());
-        BigDecimal differentiatedPsk = calculatePsk(scoringData.getAmount(), rate, scoringData.getTerm(), false);
+        BigDecimal differentiatedPsk = calculateDifferentiatedTotalAmount(scoringData.getAmount(), rate, scoringData.getTerm());
         List<PaymentScheduleElementDto> differentiatedPaymentSchedule = calculateDifferentiatedPaymentSchedule(scoringData.getAmount(), rate, scoringData.getTerm());
 
         // Создание и возвращение CreditDto
@@ -167,11 +189,6 @@ public class LoanOfferService {
         creditDto.setDifferentiatedPaymentSchedule(differentiatedPaymentSchedule);
 
         return creditDto;
-    }
-
-    private BigDecimal calculatePsk(BigDecimal loanAmount, BigDecimal rate, int term, boolean isAnnuity) {
-        BigDecimal monthlyPayment = isAnnuity ? calculateAnnuityMonthlyPayment(loanAmount, rate, term) : calculateDifferentiatedMonthlyPayment(loanAmount, rate, term);
-        return monthlyPayment.multiply(BigDecimal.valueOf(term)).subtract(loanAmount);
     }
 
     private List<PaymentScheduleElementDto> calculateAnnuityPaymentSchedule(BigDecimal loanAmount, BigDecimal rate, int term) {

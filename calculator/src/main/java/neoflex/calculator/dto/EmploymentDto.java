@@ -1,9 +1,11 @@
 package neoflex.calculator.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
-
+@Getter
+@Setter
 public class EmploymentDto {
 
     public enum EmploymentStatus {
@@ -22,16 +24,11 @@ public class EmploymentDto {
         MIDDLE_MANAGER,
         TOP_MANAGER;
     }
-    @Getter
+
     private EmploymentStatus employmentStatus;
-    @Getter
     private String employerINN;
-    @Getter
     private BigDecimal salary;
-    @Getter
     private Position position;
-    @Getter
     private Integer workExperienceTotal;
-    @Getter
     private Integer workExperienceCurrent;
 }
