@@ -1,5 +1,11 @@
 package neoflex.calculator.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import neoflex.calculator.dto.CreditDto;
 import neoflex.calculator.dto.LoanStatementRequestDto;
 import neoflex.calculator.dto.LoanOfferDto;
@@ -17,6 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/calculator")
+@Tag(name = "Calculator API", description = "API for calculating loan offers and credit details")
 public class CalculatorController {
 
     private static final Logger logger = LoggerFactory.getLogger(CalculatorController.class);
@@ -29,6 +36,14 @@ public class CalculatorController {
     }
 
     @PostMapping("/offers")
+    @Operation(summary = "Calculate loan offers", description = "Calculates loan offers based on the provided loan statement request")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = LoanOfferDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input",
+                    content = @Content(mediaType = "application/json"))
+    })
     public ResponseEntity<?> getLoanOffers(@RequestBody LoanStatementRequestDto request) {
         logger.info("Received LoanStatementRequestDto: {}", request);
 
@@ -46,6 +61,14 @@ public class CalculatorController {
     }
 
     @PostMapping("/calc")
+    @Operation(summary = "Calculate credit details", description = "Calculates credit details based on the provided scoring data")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CreditDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input",
+                    content = @Content(mediaType = "application/json"))
+    })
     public ResponseEntity<?> calculateCredit(@RequestBody ScoringDataDto scoringData) {
         logger.info("Received ScoringDataDto: {}", scoringData);
 
