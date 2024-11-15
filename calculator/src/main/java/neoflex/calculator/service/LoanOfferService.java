@@ -2,6 +2,8 @@ package neoflex.calculator.service;
 
 import lombok.Getter;
 import neoflex.calculator.dto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,8 @@ import static neoflex.calculator.util.AgeUtils.calculateAge;
 
 @Service
 public class LoanOfferService {
+    private static final Logger logger = LoggerFactory.getLogger(LoanOfferService.class);
+
     @Getter
     @Value("${base.interest.rate}")
     private BigDecimal baseInterestRate;
@@ -26,6 +30,8 @@ public class LoanOfferService {
     private static final BigDecimal SALARY_CLIENT_DISCOUNT = BigDecimal.valueOf(0.01);
 
     public List<LoanOfferDto> generateLoanOffers(LoanStatementRequestDto request) {
+        logger.info("Generating loan offers for request: {}", request);
+
         List<LoanOfferDto> offers = new ArrayList<>();
 
         offers.add(createLoanOffer(request, false, false));
@@ -34,10 +40,14 @@ public class LoanOfferService {
         offers.add(createLoanOffer(request, true, true));
 
         offers.sort(Comparator.comparing(LoanOfferDto::getRate));
+
+        logger.info("Generated {} loan offers.", offers.size());
         return offers;
     }
 
     private LoanOfferDto createLoanOffer(LoanStatementRequestDto request, boolean isInsuranceEnabled, boolean isSalaryClient) {
+        logger.debug("Creating loan offer with insuranceEnabled: {}, salaryClient: {}", isInsuranceEnabled, isSalaryClient);
+
         BigDecimal interestRate = baseInterestRate;
 
         if (isInsuranceEnabled) {
@@ -61,7 +71,7 @@ public class LoanOfferService {
             differentiatedTotalAmount = differentiatedTotalAmount.add(insuranceCost);
         }
 
-        return new LoanOfferDto(
+        LoanOfferDto loanOfferDto = new LoanOfferDto(
                 UUID.randomUUID(),
                 request.getAmount(),
                 request.getTerm(),
@@ -73,24 +83,39 @@ public class LoanOfferService {
                 isInsuranceEnabled,
                 isSalaryClient
         );
+
+        logger.debug("Created loan offer: {}", loanOfferDto);
+        return loanOfferDto;
     }
 
     BigDecimal calculateAnnuityMonthlyPayment(BigDecimal loanAmount, BigDecimal Rate, int termMonths) {
+        logger.debug("Calculating annuity monthly payment for loanAmount: {}, rate: {}, termMonths: {}", loanAmount, Rate, termMonths);
+
         BigDecimal monthlyRate = Rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal onePlusRateToPowerTerm = BigDecimal.ONE.add(monthlyRate).pow(termMonths, MathContext.DECIMAL128);
         BigDecimal numerator = loanAmount.multiply(monthlyRate).multiply(onePlusRateToPowerTerm);
         BigDecimal denominator = onePlusRateToPowerTerm.subtract(BigDecimal.ONE);
-        return numerator.divide(denominator, 2, RoundingMode.HALF_UP);
+        BigDecimal annuityPayment = numerator.divide(denominator, 2, RoundingMode.HALF_UP);
+
+        logger.debug("Calculated annuity monthly payment: {}", annuityPayment);
+        return annuityPayment;
     }
 
     BigDecimal calculateDifferentiatedMonthlyPayment(BigDecimal loanAmount, BigDecimal Rate, int termMonths) {
+        logger.debug("Calculating differentiated monthly payment for loanAmount: {}, rate: {}, termMonths: {}", loanAmount, Rate, termMonths);
+
         BigDecimal monthlyRate = Rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal principalPayment = loanAmount.divide(BigDecimal.valueOf(termMonths), MathContext.DECIMAL128);
         BigDecimal interestPayment = loanAmount.multiply(monthlyRate);
-        return principalPayment.add(interestPayment).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal differentiatedPayment = principalPayment.add(interestPayment).setScale(2, RoundingMode.HALF_UP);
+
+        logger.debug("Calculated differentiated monthly payment: {}", differentiatedPayment);
+        return differentiatedPayment;
     }
 
     private BigDecimal calculateDifferentiatedTotalAmount(BigDecimal loanAmount, BigDecimal Rate, int termMonths) {
+        logger.debug("Calculating differentiated total amount for loanAmount: {}, rate: {}, termMonths: {}", loanAmount, Rate, termMonths);
+
         BigDecimal totalAmount = BigDecimal.ZERO;
         BigDecimal monthlyRate = Rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal principalPayment = loanAmount.divide(BigDecimal.valueOf(termMonths), MathContext.DECIMAL128);
@@ -102,15 +127,19 @@ public class LoanOfferService {
             totalAmount = totalAmount.add(principalPayment.add(interestPayment));
         }
 
+        logger.debug("Calculated differentiated total amount: {}", totalAmount);
         return totalAmount;
     }
 
     public CreditDto calculateCredit(ScoringDataDto scoringData) {
+        logger.info("Calculating credit for scoring data: {}", scoringData);
+
         BigDecimal rate = baseInterestRate;
 
         // Применение правил скоринга по статусу занятости
         switch (scoringData.getEmployment().getEmploymentStatus()) {
             case UNEMPLOYED:
+                logger.warn("Scoring data rejected: Unemployed status.");
                 throw new IllegalArgumentException("Отказ: статус - безработный.");
             case SELF_EMPLOYED:
                 rate = rate.add(BigDecimal.valueOf(2));
@@ -136,6 +165,7 @@ public class LoanOfferService {
 
         // Применение правил скоринга по сумме займа
         if (scoringData.getAmount().compareTo(scoringData.getEmployment().getSalary().multiply(BigDecimal.valueOf(24))) > 0) {
+            logger.warn("Scoring data rejected: Loan amount exceeds 24 salaries.");
             throw new IllegalArgumentException("Отказ: сумма займа больше, чем 24 зарплат.");
         }
 
@@ -163,6 +193,7 @@ public class LoanOfferService {
 
         // Применение правил скоринга по стажу работы
         if (scoringData.getEmployment().getWorkExperienceTotal() < 18 || scoringData.getEmployment().getWorkExperienceCurrent() < 3) {
+            logger.warn("Scoring data rejected: Insufficient work experience.");
             throw new IllegalArgumentException("Отказ: стаж работы менее 18 месяцев или текущий стаж менее 3 месяцев.");
         }
 
@@ -188,10 +219,13 @@ public class LoanOfferService {
         creditDto.setAnnuityPaymentSchedule(annuityPaymentSchedule);
         creditDto.setDifferentiatedPaymentSchedule(differentiatedPaymentSchedule);
 
+        logger.info("Calculated credit data: {}", creditDto);
         return creditDto;
     }
 
     private List<PaymentScheduleElementDto> calculateAnnuityPaymentSchedule(BigDecimal loanAmount, BigDecimal rate, int term) {
+        logger.debug("Calculating annuity payment schedule for loanAmount: {}, rate: {}, term: {}", loanAmount, rate, term);
+
         List<PaymentScheduleElementDto> paymentSchedule = new ArrayList<>();
         BigDecimal monthlyRate = rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal remainingPrincipal = loanAmount;
@@ -213,10 +247,13 @@ public class LoanOfferService {
             paymentSchedule.add(element);
         }
 
+        logger.debug("Calculated annuity payment schedule: {}", paymentSchedule);
         return paymentSchedule;
     }
 
     private List<PaymentScheduleElementDto> calculateDifferentiatedPaymentSchedule(BigDecimal loanAmount, BigDecimal rate, int term) {
+        logger.debug("Calculating differentiated payment schedule for loanAmount: {}, rate: {}, term: {}", loanAmount, rate, term);
+
         List<PaymentScheduleElementDto> paymentSchedule = new ArrayList<>();
         BigDecimal monthlyRate = rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal principalPayment = loanAmount.divide(BigDecimal.valueOf(term), MathContext.DECIMAL128);
@@ -237,6 +274,7 @@ public class LoanOfferService {
             paymentSchedule.add(element);
         }
 
+        logger.debug("Calculated differentiated payment schedule: {}", paymentSchedule);
         return paymentSchedule;
     }
 }
