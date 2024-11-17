@@ -1,3 +1,6 @@
+/**
+ * Пакет сервисов для калькулятора кредитных предложений.
+ */
 package neoflex.calculator.service;
 
 import lombok.Getter;
@@ -18,6 +21,9 @@ import java.util.UUID;
 
 import static neoflex.calculator.util.AgeUtils.calculateAge;
 
+/**
+ * Сервис для генерации кредитных предложений.
+ */
 @Service
 public class LoanOfferService {
     private static final Logger logger = LoggerFactory.getLogger(LoanOfferService.class);
@@ -29,8 +35,14 @@ public class LoanOfferService {
     private static final BigDecimal INSURANCE_DISCOUNT = BigDecimal.valueOf(0.03);
     private static final BigDecimal SALARY_CLIENT_DISCOUNT = BigDecimal.valueOf(0.01);
 
+    /**
+     * Генерирует список кредитных предложений на основе запроса.
+     *
+     * @param request запрос на кредитное предложение
+     * @return список кредитных предложений
+     */
     public List<LoanOfferDto> generateLoanOffers(LoanStatementRequestDto request) {
-        logger.info("Generating loan offers for request: {}", request);
+        logger.info("Генерация кредитных предложений для запроса: {}", request);
 
         List<LoanOfferDto> offers = new ArrayList<>();
 
@@ -41,12 +53,20 @@ public class LoanOfferService {
 
         offers.sort(Comparator.comparing(LoanOfferDto::getRate));
 
-        logger.info("Generated {} loan offers.", offers.size());
+        logger.info("Сгенерировано {} кредитных предложений.", offers.size());
         return offers;
     }
 
+    /**
+     * Создает кредитное предложение.
+     *
+     * @param request            запрос на кредитное предложение
+     * @param isInsuranceEnabled  включено ли страхование
+     * @param isSalaryClient      является ли клиент зарплатным клиентом
+     * @return кредитное предложение
+     */
     private LoanOfferDto createLoanOffer(LoanStatementRequestDto request, boolean isInsuranceEnabled, boolean isSalaryClient) {
-        logger.debug("Creating loan offer with insuranceEnabled: {}, salaryClient: {}", isInsuranceEnabled, isSalaryClient);
+        logger.debug("Создание кредитного предложения с insuranceEnabled: {}, salaryClient: {}", isInsuranceEnabled, isSalaryClient);
 
         BigDecimal interestRate = baseInterestRate;
 
@@ -84,40 +104,64 @@ public class LoanOfferService {
                 isSalaryClient
         );
 
-        logger.debug("Created loan offer: {}", loanOfferDto);
+        logger.debug("Создано кредитное предложение: {}", loanOfferDto);
         return loanOfferDto;
     }
 
-    BigDecimal calculateAnnuityMonthlyPayment(BigDecimal loanAmount, BigDecimal Rate, int termMonths) {
-        logger.debug("Calculating annuity monthly payment for loanAmount: {}, rate: {}, termMonths: {}", loanAmount, Rate, termMonths);
+    /**
+     * Рассчитывает аннуитетный ежемесячный платеж.
+     *
+     * @param loanAmount  сумма кредита
+     * @param rate        процентная ставка
+     * @param termMonths  срок кредита в месяцах
+     * @return аннуитетный ежемесячный платеж
+     */
+    BigDecimal calculateAnnuityMonthlyPayment(BigDecimal loanAmount, BigDecimal rate, int termMonths) {
+        logger.debug("Расчет аннуитетного ежемесячного платежа для loanAmount: {}, rate: {}, termMonths: {}", loanAmount, rate, termMonths);
 
-        BigDecimal monthlyRate = Rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
+        BigDecimal monthlyRate = rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal onePlusRateToPowerTerm = BigDecimal.ONE.add(monthlyRate).pow(termMonths, MathContext.DECIMAL128);
         BigDecimal numerator = loanAmount.multiply(monthlyRate).multiply(onePlusRateToPowerTerm);
         BigDecimal denominator = onePlusRateToPowerTerm.subtract(BigDecimal.ONE);
         BigDecimal annuityPayment = numerator.divide(denominator, 2, RoundingMode.HALF_UP);
 
-        logger.debug("Calculated annuity monthly payment: {}", annuityPayment);
+        logger.debug("Рассчитан аннуитетный ежемесячный платеж: {}", annuityPayment);
         return annuityPayment;
     }
 
-    BigDecimal calculateDifferentiatedMonthlyPayment(BigDecimal loanAmount, BigDecimal Rate, int termMonths) {
-        logger.debug("Calculating differentiated monthly payment for loanAmount: {}, rate: {}, termMonths: {}", loanAmount, Rate, termMonths);
+    /**
+     * Рассчитывает дифференцированный ежемесячный платеж.
+     *
+     * @param loanAmount  сумма кредита
+     * @param rate        процентная ставка
+     * @param termMonths  срок кредита в месяцах
+     * @return дифференцированный ежемесячный платеж
+     */
+    BigDecimal calculateDifferentiatedMonthlyPayment(BigDecimal loanAmount, BigDecimal rate, int termMonths) {
+        logger.debug("Расчет дифференцированного ежемесячного платежа для loanAmount: {}, rate: {}, termMonths: {}", loanAmount, rate, termMonths);
 
-        BigDecimal monthlyRate = Rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
+        BigDecimal monthlyRate = rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal principalPayment = loanAmount.divide(BigDecimal.valueOf(termMonths), MathContext.DECIMAL128);
         BigDecimal interestPayment = loanAmount.multiply(monthlyRate);
         BigDecimal differentiatedPayment = principalPayment.add(interestPayment).setScale(2, RoundingMode.HALF_UP);
 
-        logger.debug("Calculated differentiated monthly payment: {}", differentiatedPayment);
+        logger.debug("Рассчитан дифференцированный ежемесячный платеж: {}", differentiatedPayment);
         return differentiatedPayment;
     }
 
-    private BigDecimal calculateDifferentiatedTotalAmount(BigDecimal loanAmount, BigDecimal Rate, int termMonths) {
-        logger.debug("Calculating differentiated total amount for loanAmount: {}, rate: {}, termMonths: {}", loanAmount, Rate, termMonths);
+    /**
+     * Рассчитывает итоговую сумму дифференцированного кредита.
+     *
+     * @param loanAmount  сумма кредита
+     * @param rate        процентная ставка
+     * @param termMonths  срок кредита в месяцах
+     * @return итоговая сумма дифференцированного кредита
+     */
+    private BigDecimal calculateDifferentiatedTotalAmount(BigDecimal loanAmount, BigDecimal rate, int termMonths) {
+        logger.debug("Расчет итоговой суммы дифференцированного кредита для loanAmount: {}, rate: {}, termMonths: {}", loanAmount, rate, termMonths);
 
         BigDecimal totalAmount = BigDecimal.ZERO;
-        BigDecimal monthlyRate = Rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
+        BigDecimal monthlyRate = rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
         BigDecimal principalPayment = loanAmount.divide(BigDecimal.valueOf(termMonths), MathContext.DECIMAL128);
         BigDecimal remainingPrincipal = loanAmount;
 
@@ -127,19 +171,25 @@ public class LoanOfferService {
             totalAmount = totalAmount.add(principalPayment.add(interestPayment));
         }
 
-        logger.debug("Calculated differentiated total amount: {}", totalAmount);
+        logger.debug("Рассчитана итоговая сумма дифференцированного кредита: {}", totalAmount);
         return totalAmount;
     }
 
+    /**
+     * Рассчитывает детали кредита на основе данных скоринга.
+     *
+     * @param scoringData данные для скоринга
+     * @return детали кредита
+     */
     public CreditDto calculateCredit(ScoringDataDto scoringData) {
-        logger.info("Calculating credit for scoring data: {}", scoringData);
+        logger.info("Расчет кредита для данных скоринга: {}", scoringData);
 
         BigDecimal rate = baseInterestRate;
 
         // Применение правил скоринга по статусу занятости
         switch (scoringData.getEmployment().getEmploymentStatus()) {
             case UNEMPLOYED:
-                logger.warn("Scoring data rejected: Unemployed status.");
+                logger.warn("Данные скоринга отклонены: Статус - безработный.");
                 throw new IllegalArgumentException("Отказ: статус - безработный.");
             case SELF_EMPLOYED:
                 rate = rate.add(BigDecimal.valueOf(2));
@@ -165,7 +215,7 @@ public class LoanOfferService {
 
         // Применение правил скоринга по сумме займа
         if (scoringData.getAmount().compareTo(scoringData.getEmployment().getSalary().multiply(BigDecimal.valueOf(24))) > 0) {
-            logger.warn("Scoring data rejected: Loan amount exceeds 24 salaries.");
+            logger.warn("Данные скоринга отклонены: Сумма займа превышает 24 зарплаты.");
             throw new IllegalArgumentException("Отказ: сумма займа больше, чем 24 зарплат.");
         }
 
@@ -193,7 +243,7 @@ public class LoanOfferService {
 
         // Применение правил скоринга по стажу работы
         if (scoringData.getEmployment().getWorkExperienceTotal() < 18 || scoringData.getEmployment().getWorkExperienceCurrent() < 3) {
-            logger.warn("Scoring data rejected: Insufficient work experience.");
+            logger.warn("Данные скоринга отклонены: Недостаточный стаж работы.");
             throw new IllegalArgumentException("Отказ: стаж работы менее 18 месяцев или текущий стаж менее 3 месяцев.");
         }
 
@@ -219,12 +269,20 @@ public class LoanOfferService {
         creditDto.setAnnuityPaymentSchedule(annuityPaymentSchedule);
         creditDto.setDifferentiatedPaymentSchedule(differentiatedPaymentSchedule);
 
-        logger.info("Calculated credit data: {}", creditDto);
+        logger.info("Рассчитанные данные кредита: {}", creditDto);
         return creditDto;
     }
 
+    /**
+     * Рассчитывает график аннуитетных платежей.
+     *
+     * @param loanAmount сумма кредита
+     * @param rate        процентная ставка
+     * @param term        срок кредита в месяцах
+     * @return график аннуитетных платежей
+     */
     private List<PaymentScheduleElementDto> calculateAnnuityPaymentSchedule(BigDecimal loanAmount, BigDecimal rate, int term) {
-        logger.debug("Calculating annuity payment schedule for loanAmount: {}, rate: {}, term: {}", loanAmount, rate, term);
+        logger.debug("Расчет графика аннуитетных платежей для loanAmount: {}, rate: {}, term: {}", loanAmount, rate, term);
 
         List<PaymentScheduleElementDto> paymentSchedule = new ArrayList<>();
         BigDecimal monthlyRate = rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
@@ -247,12 +305,20 @@ public class LoanOfferService {
             paymentSchedule.add(element);
         }
 
-        logger.debug("Calculated annuity payment schedule: {}", paymentSchedule);
+        logger.debug("Рассчитан график аннуитетных платежей: {}", paymentSchedule);
         return paymentSchedule;
     }
 
+    /**
+     * Рассчитывает график дифференцированных платежей.
+     *
+     * @param loanAmount сумма кредита
+     * @param rate        процентная ставка
+     * @param term        срок кредита в месяцах
+     * @return график дифференцированных платежей
+     */
     private List<PaymentScheduleElementDto> calculateDifferentiatedPaymentSchedule(BigDecimal loanAmount, BigDecimal rate, int term) {
-        logger.debug("Calculating differentiated payment schedule for loanAmount: {}, rate: {}, term: {}", loanAmount, rate, term);
+        logger.debug("Расчет графика дифференцированных платежей для loanAmount: {}, rate: {}, term: {}", loanAmount, rate, term);
 
         List<PaymentScheduleElementDto> paymentSchedule = new ArrayList<>();
         BigDecimal monthlyRate = rate.divide(BigDecimal.valueOf(12), MathContext.DECIMAL128);
@@ -274,7 +340,7 @@ public class LoanOfferService {
             paymentSchedule.add(element);
         }
 
-        logger.debug("Calculated differentiated payment schedule: {}", paymentSchedule);
+        logger.debug("Рассчитан график дифференцированных платежей: {}", paymentSchedule);
         return paymentSchedule;
     }
 }

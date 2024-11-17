@@ -1,9 +1,14 @@
+/**
+ * DTO для элемента графика платежей.
+ */
 package neoflex.calculator.dto;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import lombok.Getter;
-import lombok.Setter;
+
 @Getter
 @Setter
 public class PaymentScheduleElementDto {

@@ -1,3 +1,6 @@
+/**
+ * Пакет DTO для калькулятора кредитных предложений.
+ */
 package neoflex.calculator.dto;
 
 import lombok.Getter;
@@ -5,6 +8,10 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+/**
+ * DTO для данных кредита.
+ */
 @Getter
 @Setter
 public class CreditDto {

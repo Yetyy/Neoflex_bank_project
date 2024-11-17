@@ -1,9 +1,16 @@
+/**
+ * DTO для данных о занятости.
+ */
 package neoflex.calculator.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+
+/**
+ * Перечисление статусов занятости.
+ */
 @Getter
 @Setter
 public class EmploymentDto {

@@ -1,3 +1,6 @@
+/**
+ * DTO для кредитного предложения.
+ */
 package neoflex.calculator.dto;
 
 import lombok.AllArgsConstructor;
