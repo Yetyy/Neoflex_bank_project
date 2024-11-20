@@ -192,10 +192,10 @@ public class LoanOfferService {
                 logger.warn("Данные скоринга отклонены: Статус - безработный.");
                 throw new IllegalArgumentException("Отказ: статус - безработный.");
             case SELF_EMPLOYED:
-                rate = rate.add(BigDecimal.valueOf(2));
+                rate = rate.add(BigDecimal.valueOf(0.02));
                 break;
             case BUSINESS_OWNER:
-                rate = rate.add(BigDecimal.valueOf(1));
+                rate = rate.add(BigDecimal.valueOf(0.01));
                 break;
             default:
                 break;
@@ -204,10 +204,10 @@ public class LoanOfferService {
         // Применение правил скоринга по позиции на работе
         switch (scoringData.getEmployment().getPosition()) {
             case MIDDLE_MANAGER:
-                rate = rate.subtract(BigDecimal.valueOf(2));
+                rate = rate.subtract(BigDecimal.valueOf(0.02));
                 break;
             case TOP_MANAGER:
-                rate = rate.subtract(BigDecimal.valueOf(3));
+                rate = rate.subtract(BigDecimal.valueOf(0.03));
                 break;
             default:
                 break;
@@ -222,10 +222,10 @@ public class LoanOfferService {
         // Применение правил скоринга по семейному положению
         switch (scoringData.getMaritalStatus()) {
             case MARRIED:
-                rate = rate.subtract(BigDecimal.valueOf(3));
+                rate = rate.subtract(BigDecimal.valueOf(0.03));
                 break;
             case DIVORCED:
-                rate = rate.add(BigDecimal.valueOf(1));
+                rate = rate.add(BigDecimal.valueOf(0.01));
                 break;
             default:
                 break;
@@ -234,11 +234,11 @@ public class LoanOfferService {
         // Применение правил скоринга по полу
         int age = calculateAge(scoringData.getBirthdate(), LocalDate.now());
         if (scoringData.getGender() == Gender.FEMALE && age >= 32 && age <= 60) {
-            rate = rate.subtract(BigDecimal.valueOf(3));
+            rate = rate.subtract(BigDecimal.valueOf(0.03));
         } else if (scoringData.getGender() == Gender.MALE && age >= 30 && age <= 55) {
-            rate = rate.subtract(BigDecimal.valueOf(3));
+            rate = rate.subtract(BigDecimal.valueOf(0.03));
         } else if (scoringData.getGender() == Gender.NON_BINARY) {
-            rate = rate.add(BigDecimal.valueOf(7));
+            rate = rate.add(BigDecimal.valueOf(0.07));
         }
 
         // Применение правил скоринга по стажу работы
