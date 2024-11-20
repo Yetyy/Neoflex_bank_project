@@ -208,28 +208,28 @@ public class LoanOfferServiceTest {
     void testCalculateCredit_SelfEmployed() {
         scoringData.getEmployment().setEmploymentStatus(EmploymentDto.EmploymentStatus.SELF_EMPLOYED);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-        assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(2)), creditData.getRate());
+        assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(0.02)), creditData.getRate());
     }
 
     @Test
     void testCalculateCredit_BusinessOwner() {
         scoringData.getEmployment().setEmploymentStatus(EmploymentDto.EmploymentStatus.BUSINESS_OWNER);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-        assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(1)), creditData.getRate());
+        assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(0.01)), creditData.getRate());
     }
 
     @Test
     void testCalculateCredit_MiddleManager() {
         scoringData.getEmployment().setPosition(EmploymentDto.Position.MIDDLE_MANAGER);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(2)), creditData.getRate());
+        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.02)), creditData.getRate());
     }
 
     @Test
     void testCalculateCredit_TopManager() {
         scoringData.getEmployment().setPosition(EmploymentDto.Position.TOP_MANAGER);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(3)), creditData.getRate());
+        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03)), creditData.getRate());
     }
 
     @Test
@@ -242,14 +242,14 @@ public class LoanOfferServiceTest {
     void testCalculateCredit_Married() {
         scoringData.setMaritalStatus(MaritalStatus.MARRIED);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(3)), creditData.getRate());
+        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03)), creditData.getRate());
     }
 
     @Test
     void testCalculateCredit_Divorced() {
         scoringData.setMaritalStatus(MaritalStatus.DIVORCED);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-        assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(1)), creditData.getRate());
+        assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(0.01)), creditData.getRate());
     }
 
     @Test
@@ -257,7 +257,7 @@ public class LoanOfferServiceTest {
         scoringData.setGender(Gender.FEMALE);
         scoringData.setBirthdate(LocalDate.of(1990, 5, 20)); // 32 years old
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(3)), creditData.getRate());
+        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03)), creditData.getRate());
     }
 
     @Test
@@ -265,14 +265,14 @@ public class LoanOfferServiceTest {
         scoringData.setGender(Gender.MALE);
         scoringData.setBirthdate(LocalDate.of(1993, 5, 20)); // 30 years old
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(3)), creditData.getRate());
+        assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03)), creditData.getRate());
     }
 
     @Test
     void testCalculateCredit_NonBinary() {
         scoringData.setGender(Gender.NON_BINARY);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-        assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(7)), creditData.getRate());
+        assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(0.07)), creditData.getRate());
     }
 
     @Test
