@@ -186,6 +186,15 @@ public class LoanOfferService {
 
         BigDecimal rate = baseInterestRate;
 
+        //Применение правил скоринга по страховке
+        if (scoringData.getIsInsuranceEnabled()) {
+            rate = rate.subtract(INSURANCE_DISCOUNT);
+        }
+
+        //Применение правил скоринга по зарплатному клиенту
+        if (scoringData.getIsSalaryClient()) {
+            rate = rate.subtract(SALARY_CLIENT_DISCOUNT);
+        }
         // Применение правил скоринга по статусу занятости
         switch (scoringData.getEmployment().getEmploymentStatus()) {
             case UNEMPLOYED:
@@ -257,6 +266,12 @@ public class LoanOfferService {
         BigDecimal differentiatedPsk = calculateDifferentiatedTotalAmount(scoringData.getAmount(), rate, scoringData.getTerm());
         List<PaymentScheduleElementDto> differentiatedPaymentSchedule = calculateDifferentiatedPaymentSchedule(scoringData.getAmount(), rate, scoringData.getTerm());
 
+        //Добавление суммы страховки к ПСК
+        if (scoringData.getIsInsuranceEnabled()) {
+            BigDecimal insuranceCost = scoringData.getAmount().multiply(BigDecimal.valueOf(0.01));
+            annuityPsk = annuityPsk.add(insuranceCost);
+            differentiatedPsk = differentiatedPsk.add(insuranceCost);
+        }
         // Создание и возвращение CreditDto
         CreditDto creditDto = new CreditDto();
         creditDto.setAmount(scoringData.getAmount());
