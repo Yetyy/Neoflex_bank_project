@@ -15,12 +15,13 @@ import java.util.UUID;
 @AllArgsConstructor
 public class LoanOfferDto {
     private UUID statementId;
-    private BigDecimal requestedAmount;  // Сумма изначального кредита
+    private BigDecimal requestedAmount;
     private Integer term;
-    private BigDecimal annuityMonthlyPayment;   // Аннуитетный платёж
-    private BigDecimal differentiatedMonthlyPayment; // Дифференцированный платёж
-    private BigDecimal annuityTotalAmount;       // Итоговая сумма аннуитетного кредита (кредит + переплата)
-    private BigDecimal differentiatedTotalAmount; // Итоговая сумма дифференцированного кредита (кредит + переплата)
+    //Добавлено разделение на Аннуитентный и Дифференцированный платежи
+    private BigDecimal annuityMonthlyPayment;
+    private BigDecimal differentiatedMonthlyPayment;
+    private BigDecimal annuityTotalAmount;
+    private BigDecimal differentiatedTotalAmount;
     private BigDecimal rate;
     private boolean isInsuranceEnabled;
     private boolean isSalaryClient;

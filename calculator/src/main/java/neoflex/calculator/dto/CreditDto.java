@@ -19,6 +19,7 @@ public class CreditDto {
     private BigDecimal amount;
     private Integer term;
     private BigDecimal rate;
+    //Добавлено разделение на Аннуитентный и Дифференцированный платежи
     private BigDecimal annuityMonthlyPayment;
     private BigDecimal annuityPsk;
     private BigDecimal differentiatedMonthlyPayment;

@@ -73,15 +73,17 @@ public class LoanOfferService {
 
         BigDecimal loanAmount = request.getAmount();
 
+        //Применение правил скоринга по страховке
         if (isInsuranceEnabled) {
             interestRate = interestRate.subtract(INSURANCE_DISCOUNT);
             BigDecimal insuranceCost = loanAmount.multiply(INSURANCE_COST_RATE);
             loanAmount = loanAmount.add(insuranceCost);
         }
-
+        //Применение правил скоринга по зарплатному клиенту
         if (isSalaryClient) {
             interestRate = interestRate.subtract(SALARY_CLIENT_DISCOUNT);
         }
+        //Добавлено разделение на Аннуитентный и Дифференцированный платежи
         BigDecimal annuityPayment = calculateAnnuityMonthlyPayment(loanAmount, interestRate, request.getTerm());
         BigDecimal differentiatedPayment = calculateDifferentiatedMonthlyPayment(loanAmount, interestRate, request.getTerm());
 
