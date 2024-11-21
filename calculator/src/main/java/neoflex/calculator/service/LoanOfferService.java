@@ -33,6 +33,7 @@ public class LoanOfferService {
     private BigDecimal baseInterestRate;
 
     private static final BigDecimal INSURANCE_DISCOUNT = BigDecimal.valueOf(0.03);
+    private static final BigDecimal INSURANCE_COST_RATE = BigDecimal.valueOf(0.01);
     private static final BigDecimal SALARY_CLIENT_DISCOUNT = BigDecimal.valueOf(0.01);
 
     /**
@@ -70,26 +71,23 @@ public class LoanOfferService {
 
         BigDecimal interestRate = baseInterestRate;
 
+        BigDecimal loanAmount = request.getAmount();
+
         if (isInsuranceEnabled) {
             interestRate = interestRate.subtract(INSURANCE_DISCOUNT);
+            BigDecimal insuranceCost = loanAmount.multiply(INSURANCE_COST_RATE);
+            loanAmount = loanAmount.add(insuranceCost);
         }
+
         if (isSalaryClient) {
             interestRate = interestRate.subtract(SALARY_CLIENT_DISCOUNT);
         }
-
-        BigDecimal loanAmount = request.getAmount();
-
         BigDecimal annuityPayment = calculateAnnuityMonthlyPayment(loanAmount, interestRate, request.getTerm());
         BigDecimal differentiatedPayment = calculateDifferentiatedMonthlyPayment(loanAmount, interestRate, request.getTerm());
 
         BigDecimal annuityTotalAmount = annuityPayment.multiply(BigDecimal.valueOf(request.getTerm()));
         BigDecimal differentiatedTotalAmount = calculateDifferentiatedTotalAmount(loanAmount, interestRate, request.getTerm());
 
-        if (isInsuranceEnabled) {
-            BigDecimal insuranceCost = loanAmount.multiply(BigDecimal.valueOf(0.01));
-            annuityTotalAmount = annuityTotalAmount.add(insuranceCost);
-            differentiatedTotalAmount = differentiatedTotalAmount.add(insuranceCost);
-        }
 
         LoanOfferDto loanOfferDto = new LoanOfferDto(
                 UUID.randomUUID(),
@@ -189,6 +187,7 @@ public class LoanOfferService {
         //Применение правил скоринга по страховке
         if (scoringData.getIsInsuranceEnabled()) {
             rate = rate.subtract(INSURANCE_DISCOUNT);
+            scoringData.setAmount(scoringData.getAmount().add(scoringData.getAmount().multiply(INSURANCE_COST_RATE)));
         }
 
         //Применение правил скоринга по зарплатному клиенту
@@ -266,12 +265,7 @@ public class LoanOfferService {
         BigDecimal differentiatedPsk = calculateDifferentiatedTotalAmount(scoringData.getAmount(), rate, scoringData.getTerm());
         List<PaymentScheduleElementDto> differentiatedPaymentSchedule = calculateDifferentiatedPaymentSchedule(scoringData.getAmount(), rate, scoringData.getTerm());
 
-        //Добавление суммы страховки к ПСК
-        if (scoringData.getIsInsuranceEnabled()) {
-            BigDecimal insuranceCost = scoringData.getAmount().multiply(BigDecimal.valueOf(0.01));
-            annuityPsk = annuityPsk.add(insuranceCost);
-            differentiatedPsk = differentiatedPsk.add(insuranceCost);
-        }
+
         // Создание и возвращение CreditDto
         CreditDto creditDto = new CreditDto();
         creditDto.setAmount(scoringData.getAmount());
