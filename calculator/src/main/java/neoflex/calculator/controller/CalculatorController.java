@@ -13,7 +13,7 @@ import neoflex.calculator.dto.CreditDto;
 import neoflex.calculator.dto.LoanStatementRequestDto;
 import neoflex.calculator.dto.LoanOfferDto;
 import neoflex.calculator.dto.ScoringDataDto;
-import neoflex.calculator.service.LoanOfferService;
+import neoflex.calculator.service.CalculatorService;
 import neoflex.calculator.util.AgeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class CalculatorController {
 
     private static final Logger logger = LoggerFactory.getLogger(CalculatorController.class);
 
-    private final LoanOfferService loanOfferService;
+    private final CalculatorService loanOfferService;
 
     /**
      * Конструктор для инициализации сервиса кредитных предложений.
@@ -42,7 +42,7 @@ public class CalculatorController {
      * @param loanOfferService сервис для генерации кредитных предложений
      */
     @Autowired
-    public CalculatorController(LoanOfferService loanOfferService) {
+    public CalculatorController(CalculatorService loanOfferService) {
         this.loanOfferService = loanOfferService;
     }
 
@@ -61,20 +61,19 @@ public class CalculatorController {
             @ApiResponse(responseCode = "400", description = "Неверный ввод",
                     content = @Content(mediaType = "application/json"))
     })
-    public ResponseEntity<?> getLoanOffers(@RequestBody LoanStatementRequestDto request) {
+    public ResponseEntity<List<LoanOfferDto>> createLoanOffers(@RequestBody LoanStatementRequestDto request) {
         logger.info("Получен запрос LoanStatementRequestDto: {}", request);
-
-        int age = AgeUtils.calculateAge(request.getBirthDate(), LocalDate.now());
-        logger.debug("Рассчитанный возраст клиента: {}", age);
-
-        if (age < 20 || age > 65) {
-            logger.warn("Возраст клиента {} не подходит для кредита. Отклонение запроса.", age);
-            return ResponseEntity.status(400).body("Отказ: возраст клиента должен быть от 20 до 65 лет.");
+        try {
+            List<LoanOfferDto> loanOffers = loanOfferService.generateLoanOffers(request);
+            logger.info("Сгенерировано {} кредитных предложений.", loanOffers.size());
+            return ResponseEntity.ok(loanOffers);
+        } catch (IllegalArgumentException e) {
+            logger.error("Ошибка при генерации кредитных предложений: {}", e.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .header("Error-Message", e.getMessage())
+                    .build();
         }
-
-        List<LoanOfferDto> loanOffers = loanOfferService.generateLoanOffers(request);
-        logger.info("Сгенерировано {} кредитных предложений.", loanOffers.size());
-        return ResponseEntity.ok(loanOffers);
     }
 
     /**
@@ -92,7 +91,7 @@ public class CalculatorController {
             @ApiResponse(responseCode = "400", description = "Неверный ввод",
                     content = @Content(mediaType = "application/json"))
     })
-    public ResponseEntity<?> calculateCredit(@RequestBody ScoringDataDto scoringData) {
+    public ResponseEntity<CreditDto> calculateCredit(@RequestBody ScoringDataDto scoringData) {
         logger.info("Получены данные для скоринга ScoringDataDto: {}", scoringData);
 
         try {
@@ -101,7 +100,10 @@ public class CalculatorController {
             return ResponseEntity.ok(creditData);
         } catch (IllegalArgumentException e) {
             logger.error("Ошибка при расчете кредита: {}", e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .header("Error-Message", e.getMessage())
+                    .build();
         }
     }
 }

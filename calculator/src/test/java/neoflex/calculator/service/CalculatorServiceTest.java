@@ -1,6 +1,10 @@
 package neoflex.calculator.service;
 
 import neoflex.calculator.dto.*;
+import neoflex.calculator.dto.enums.EmploymentStatus;
+import neoflex.calculator.dto.enums.Gender;
+import neoflex.calculator.dto.enums.MaritalStatus;
+import neoflex.calculator.dto.enums.Position;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,10 +19,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class LoanOfferServiceTest {
+public class CalculatorServiceTest {
 
     @Autowired
-    private LoanOfferService loanOfferService;
+    private CalculatorService loanOfferService;
 
     private LoanStatementRequestDto request;
     private ScoringDataDto scoringData;
@@ -41,9 +45,9 @@ public class LoanOfferServiceTest {
         scoringData.setMaritalStatus(MaritalStatus.SINGLE);
 
         EmploymentDto employment = new EmploymentDto();
-        employment.setEmploymentStatus(EmploymentDto.EmploymentStatus.EMPLOYED);
+        employment.setEmploymentStatus(EmploymentStatus.EMPLOYED);
         employment.setSalary(BigDecimal.valueOf(600000));
-        employment.setPosition(EmploymentDto.Position.DEVELOPER);
+        employment.setPosition(Position.DEVELOPER);
         employment.setWorkExperienceTotal(20);
         employment.setWorkExperienceCurrent(20);
 
@@ -54,6 +58,11 @@ public class LoanOfferServiceTest {
 
     @Test
     void testGenerateLoanOffers_noInsuranceNoSalaryClient() {
+        LoanStatementRequestDto request = new LoanStatementRequestDto();
+        request.setAmount(BigDecimal.valueOf(100000));
+        request.setTerm(12);
+        request.setBirthDate(LocalDate.now().minusYears(30));
+
         List<LoanOfferDto> offers = loanOfferService.generateLoanOffers(request);
 
         assertEquals(4, offers.size());
@@ -63,11 +72,16 @@ public class LoanOfferServiceTest {
         assertEquals(false, offer.isSalaryClient());
     }
 
+
     @Test
     void testGenerateLoanOffers_noInsuranceWithSalaryClient() {
+        LoanStatementRequestDto request = new LoanStatementRequestDto();
+        request.setAmount(BigDecimal.valueOf(100000));
+        request.setTerm(12);
+        request.setBirthDate(LocalDate.now().minusYears(30));
+
         List<LoanOfferDto> offers = loanOfferService.generateLoanOffers(request);
 
-        // Получаем значение baseInterestRate из LoanOfferService
         BigDecimal expectedRate = loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.01));
 
         LoanOfferDto offer = offers.stream()
@@ -82,6 +96,11 @@ public class LoanOfferServiceTest {
 
     @Test
     void testGenerateLoanOffers_withInsuranceNoSalaryClient() {
+        LoanStatementRequestDto request = new LoanStatementRequestDto();
+        request.setAmount(BigDecimal.valueOf(100000));
+        request.setTerm(12);
+        request.setBirthDate(LocalDate.now().minusYears(30));
+
         List<LoanOfferDto> offers = loanOfferService.generateLoanOffers(request);
 
         // Проверка ставки с учетом страховки
@@ -99,6 +118,11 @@ public class LoanOfferServiceTest {
 
     @Test
     void testGenerateLoanOffers_withInsuranceAndSalaryClient() {
+        LoanStatementRequestDto request = new LoanStatementRequestDto();
+        request.setAmount(BigDecimal.valueOf(100000));
+        request.setTerm(12);
+        request.setBirthDate(LocalDate.now().minusYears(30));
+
         List<LoanOfferDto> offers = loanOfferService.generateLoanOffers(request);
 
         // Проверка ставки с учетом страховки и зарплатного клиента
@@ -116,6 +140,11 @@ public class LoanOfferServiceTest {
 
     @Test
     void testGenerateLoanOffers_sortOrder() {
+        LoanStatementRequestDto request = new LoanStatementRequestDto();
+        request.setAmount(BigDecimal.valueOf(100000));
+        request.setTerm(12);
+        request.setBirthDate(LocalDate.now().minusYears(30));
+
         List<LoanOfferDto> offers = loanOfferService.generateLoanOffers(request);
 
         // Проверка сортировки по ставке (от худшего к лучшему предложению)
@@ -123,32 +152,17 @@ public class LoanOfferServiceTest {
             assertTrue(offers.get(i - 1).getRate().compareTo(offers.get(i).getRate()) <= 0);
         }
     }
+
     @Test
     public void testGenerateLoanOffers() {
         LoanStatementRequestDto request = new LoanStatementRequestDto();
         request.setAmount(BigDecimal.valueOf(100000));
         request.setTerm(12);
+        request.setBirthDate(LocalDate.now().minusYears(30));
 
         List<LoanOfferDto> loanOffers = loanOfferService.generateLoanOffers(request);
 
         assertEquals(4, loanOffers.size());
-
-//        // Вывод результатов в консоль
-//        for (int i = 0; i < loanOffers.size(); i++) {
-//            LoanOfferDto offer = loanOffers.get(i);
-//            System.out.println("Offer " + (i + 1) + ":");
-//            System.out.println("Requested Amount: " + offer.getRequestedAmount());
-//            System.out.println("annuity Total Amount: " + offer.getAnnuityTotalAmount());
-//            System.out.println("differentiated Total Amount: " + offer.getDifferentiatedTotalAmount());
-//            System.out.println("Term: " + offer.getTerm());
-//            System.out.println("Annuity Monthly Payment: " + offer.getAnnuityMonthlyPayment());
-//            System.out.println("Differentiated Monthly Payment: " + offer.getDifferentiatedMonthlyPayment());
-//            System.out.println("Rate: " + offer.getRate());
-//            System.out.println("Is Insurance Enabled: " + offer.isInsuranceEnabled());
-//            System.out.println("Is Salary Client: " + offer.isSalaryClient());
-//            System.out.println();
-//        }
-
     }
 
     @Test
@@ -158,76 +172,38 @@ public class LoanOfferServiceTest {
         // Проверка, что результат не null
         assertNotNull(creditData);
 
-//        // Вывод результата в консоль
-//        System.out.println("Credit Data:");
-//        System.out.println("Amount: " + creditData.getAmount());
-//        System.out.println("Term: " + creditData.getTerm());
-//        System.out.println("Rate: " + creditData.getRate());
-//        System.out.println("Annuity Monthly Payment: " + creditData.getAnnuityMonthlyPayment());
-//        System.out.println("Annuity PSK: " + creditData.getAnnuityPsk());
-//        System.out.println("Differentiated Monthly Payment: " + creditData.getDifferentiatedMonthlyPayment());
-//        System.out.println("Differentiated PSK: " + creditData.getDifferentiatedPsk());
-//        System.out.println("Is Insurance Enabled: " + creditData.getIsInsuranceEnabled());
-//        System.out.println("Is Salary Client: " + creditData.getIsSalaryClient());
-//
-//
-//        // Вывод аннуитетного графика платежей
-//        System.out.println("Annuity Payment Schedule:");
-//        List<PaymentScheduleElementDto> annuityPaymentSchedule = creditData.getAnnuityPaymentSchedule();
-//        for (PaymentScheduleElementDto element : annuityPaymentSchedule) {
-//            System.out.println("Payment " + element.getNumber() + ":");
-//            System.out.println("Date: " + element.getDate());
-//            System.out.println("Total Payment: " + element.getTotalPayment());
-//            System.out.println("Interest Payment: " + element.getInterestPayment());
-//            System.out.println("Debt Payment: " + element.getDebtPayment());
-//            System.out.println("Remaining Debt: " + element.getRemainingDebt());
-//            System.out.println();
-//        }
-//
-//        // Вывод дифференцированного графика платежей
-//        System.out.println("Differentiated Payment Schedule:");
-//        List<PaymentScheduleElementDto> differentiatedPaymentSchedule = creditData.getDifferentiatedPaymentSchedule();
-//        for (PaymentScheduleElementDto element : differentiatedPaymentSchedule) {
-//            System.out.println("Payment " + element.getNumber() + ":");
-//            System.out.println("Date: " + element.getDate());
-//            System.out.println("Total Payment: " + element.getTotalPayment());
-//            System.out.println("Interest Payment: " + element.getInterestPayment());
-//            System.out.println("Debt Payment: " + element.getDebtPayment());
-//            System.out.println("Remaining Debt: " + element.getRemainingDebt());
-//            System.out.println();
-//        }
     }
 
     @Test
     void testCalculateCredit_Unemployed() {
-        scoringData.getEmployment().setEmploymentStatus(EmploymentDto.EmploymentStatus.UNEMPLOYED);
+        scoringData.getEmployment().setEmploymentStatus(EmploymentStatus.UNEMPLOYED);
         assertThrows(IllegalArgumentException.class, () -> loanOfferService.calculateCredit(scoringData));
     }
 
     @Test
     void testCalculateCredit_SelfEmployed() {
-        scoringData.getEmployment().setEmploymentStatus(EmploymentDto.EmploymentStatus.SELF_EMPLOYED);
+        scoringData.getEmployment().setEmploymentStatus(EmploymentStatus.SELF_EMPLOYED);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
         assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(0.02)), creditData.getRate());
     }
 
     @Test
     void testCalculateCredit_BusinessOwner() {
-        scoringData.getEmployment().setEmploymentStatus(EmploymentDto.EmploymentStatus.BUSINESS_OWNER);
+        scoringData.getEmployment().setEmploymentStatus(EmploymentStatus.BUSINESS_OWNER);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
         assertEquals(loanOfferService.getBaseInterestRate().add(BigDecimal.valueOf(0.01)), creditData.getRate());
     }
 
     @Test
     void testCalculateCredit_MiddleManager() {
-        scoringData.getEmployment().setPosition(EmploymentDto.Position.MIDDLE_MANAGER);
+        scoringData.getEmployment().setPosition(Position.MIDDLE_MANAGER);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
         assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.02)), creditData.getRate());
     }
 
     @Test
     void testCalculateCredit_TopManager() {
-        scoringData.getEmployment().setPosition(EmploymentDto.Position.TOP_MANAGER);
+        scoringData.getEmployment().setPosition(Position.TOP_MANAGER);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
         assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03)), creditData.getRate());
     }

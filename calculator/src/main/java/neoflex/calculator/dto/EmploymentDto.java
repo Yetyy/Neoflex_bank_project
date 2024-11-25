@@ -5,32 +5,15 @@ package neoflex.calculator.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import neoflex.calculator.dto.enums.EmploymentStatus;
+import neoflex.calculator.dto.enums.Position;
 
 import java.math.BigDecimal;
 
-/**
- * Перечисление статусов занятости.
- */
 @Getter
 @Setter
 public class EmploymentDto {
 
-    public enum EmploymentStatus {
-        EMPLOYED,
-        UNEMPLOYED,
-        SELF_EMPLOYED,
-        BUSINESS_OWNER,
-        RETIRED
-    }
-
-    public enum Position {
-        MANAGER,
-        DEVELOPER,
-        ANALYST,
-        OTHER,
-        MIDDLE_MANAGER,
-        TOP_MANAGER;
-    }
 
     private EmploymentStatus employmentStatus;
     private String employerINN;

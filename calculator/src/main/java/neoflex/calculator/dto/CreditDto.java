@@ -3,6 +3,7 @@
  */
 package neoflex.calculator.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,18 +15,15 @@ import java.util.List;
  */
 @Getter
 @Setter
+@Builder
 public class CreditDto {
 
     private BigDecimal amount;
     private Integer term;
     private BigDecimal rate;
-    //Добавлено разделение на Аннуитентный и Дифференцированный платежи
-    private BigDecimal annuityMonthlyPayment;
-    private BigDecimal annuityPsk;
-    private BigDecimal differentiatedMonthlyPayment;
-    private BigDecimal differentiatedPsk;
+    private BigDecimal monthlyPayment;
+    private BigDecimal psk;
     private Boolean isInsuranceEnabled;
     private Boolean isSalaryClient;
-    private List<PaymentScheduleElementDto> annuityPaymentSchedule;
-    private List<PaymentScheduleElementDto> differentiatedPaymentSchedule;
+    private List<PaymentScheduleElementDto> paymentSchedule;
 }

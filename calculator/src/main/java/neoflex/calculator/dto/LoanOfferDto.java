@@ -17,11 +17,8 @@ public class LoanOfferDto {
     private UUID statementId;
     private BigDecimal requestedAmount;
     private Integer term;
-    //Добавлено разделение на Аннуитентный и Дифференцированный платежи
-    private BigDecimal annuityMonthlyPayment;
-    private BigDecimal differentiatedMonthlyPayment;
-    private BigDecimal annuityTotalAmount;
-    private BigDecimal differentiatedTotalAmount;
+    private BigDecimal monthlyPayment;
+    private BigDecimal totalAmount;
     private BigDecimal rate;
     private boolean isInsuranceEnabled;
     private boolean isSalaryClient;
