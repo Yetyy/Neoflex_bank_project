@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: neoflex.calculator.service.LoanOfferServiceTest
+-------------------------------------------------------------------------------
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.175 s -- in neoflex.calculator.service.LoanOfferServiceTest
