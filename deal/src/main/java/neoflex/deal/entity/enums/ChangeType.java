@@ -1,4 +1,9 @@
 package neoflex.deal.entity.enums;
 
-public class ChangeType {
+/**
+ * Перечисление, представляющее тип изменения статуса.
+ */
+public enum ChangeType {
+    AUTOMATIC,
+    MANUAL
 }

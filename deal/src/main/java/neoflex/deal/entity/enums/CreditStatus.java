@@ -1,4 +1,9 @@
 package neoflex.deal.entity.enums;
 
-public class CreditStatus {
+/**
+ * Перечисление, представляющее статус кредита.
+ */
+public enum CreditStatus {
+    CALCULATED,
+    ISSUED
 }

@@ -1,4 +1,12 @@
 package neoflex.deal.entity.enums;
 
-public class EmploymentStatus {
+/**
+ * Перечисление, представляющее статус занятости клиента.
+ */
+public enum EmploymentStatus {
+    EMPLOYED,
+    UNEMPLOYED,
+    SELF_EMPLOYED,
+    BUSINESS_OWNER,
+    RETIRED
 }
