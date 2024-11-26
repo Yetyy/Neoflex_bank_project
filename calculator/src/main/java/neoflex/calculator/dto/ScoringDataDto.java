@@ -5,8 +5,8 @@ package neoflex.calculator.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import neoflex.calculator.dto.enums.Gender;
-import neoflex.calculator.dto.enums.MaritalStatus;
+import neoflex.calculator.enums.Gender;
+import neoflex.calculator.enums.MaritalStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

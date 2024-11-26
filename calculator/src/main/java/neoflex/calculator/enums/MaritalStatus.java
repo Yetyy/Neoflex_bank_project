@@ -1,8 +1,11 @@
 /**
  * Перечисление семейного положения.
  */
-package neoflex.calculator.dto.enums;
+package neoflex.calculator.enums;
 
 public enum MaritalStatus {
-    SINGLE, MARRIED, DIVORCED
+    SINGLE,
+    MARRIED,
+    DIVORCED,
+    WIDOW_WIDOWER;
 }
