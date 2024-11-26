@@ -47,7 +47,7 @@ public class CalculatorServiceTest {
         EmploymentDto employment = new EmploymentDto();
         employment.setEmploymentStatus(EmploymentStatus.EMPLOYED);
         employment.setSalary(BigDecimal.valueOf(600000));
-        employment.setPosition(Position.DEVELOPER);
+        employment.setPosition(Position.WORKER);
         employment.setWorkExperienceTotal(20);
         employment.setWorkExperienceCurrent(20);
 

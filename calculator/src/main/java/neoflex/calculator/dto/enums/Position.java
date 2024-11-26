@@ -1,10 +1,7 @@
 package neoflex.calculator.dto.enums;
 
 public enum Position {
-    MANAGER,
-    DEVELOPER,
-    ANALYST,
-    OTHER,
+    WORKER,
     MIDDLE_MANAGER,
     TOP_MANAGER;
 }
