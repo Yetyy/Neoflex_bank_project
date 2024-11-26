@@ -1,10 +1,10 @@
 package neoflex.calculator.service;
 
 import neoflex.calculator.dto.*;
-import neoflex.calculator.dto.enums.EmploymentStatus;
-import neoflex.calculator.dto.enums.Gender;
-import neoflex.calculator.dto.enums.MaritalStatus;
-import neoflex.calculator.dto.enums.Position;
+import neoflex.calculator.enums.EmploymentStatus;
+import neoflex.calculator.enums.Gender;
+import neoflex.calculator.enums.MaritalStatus;
+import neoflex.calculator.enums.EmploymentPosition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +47,7 @@ public class CalculatorServiceTest {
         EmploymentDto employment = new EmploymentDto();
         employment.setEmploymentStatus(EmploymentStatus.EMPLOYED);
         employment.setSalary(BigDecimal.valueOf(600000));
-        employment.setPosition(Position.WORKER);
+        employment.setPosition(EmploymentPosition.WORKER);
         employment.setWorkExperienceTotal(20);
         employment.setWorkExperienceCurrent(20);
 
@@ -196,14 +196,14 @@ public class CalculatorServiceTest {
 
     @Test
     void testCalculateCredit_MiddleManager() {
-        scoringData.getEmployment().setPosition(Position.MIDDLE_MANAGER);
+        scoringData.getEmployment().setPosition(EmploymentPosition.MIDDLE_MANAGER);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
         assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.02)), creditData.getRate());
     }
 
     @Test
     void testCalculateCredit_TopManager() {
-        scoringData.getEmployment().setPosition(Position.TOP_MANAGER);
+        scoringData.getEmployment().setPosition(EmploymentPosition.TOP_MANAGER);
         CreditDto creditData = loanOfferService.calculateCredit(scoringData);
         assertEquals(loanOfferService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03)), creditData.getRate());
     }
