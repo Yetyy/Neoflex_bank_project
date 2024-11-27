@@ -1,8 +1,7 @@
 package neoflex.deal.entity;
 
-import lombok.Getter;
-import lombok.Setter;
-import neoflex.deal.entity.enums.CreditStatus;
+import lombok.*;
+import neoflex.deal.enums.CreditStatus;
 
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -17,6 +16,9 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Credit {
     @Id
     @GeneratedValue
@@ -26,7 +28,8 @@ public class Credit {
     private BigDecimal monthlyPayment;
     private BigDecimal rate;
     private BigDecimal psk;
-    @Column(columnDefinition = "jsonb")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "credit_id")
     private List<PaymentScheduleElement> paymentSchedule;
     private boolean insuranceEnabled;
     private boolean salaryClient;

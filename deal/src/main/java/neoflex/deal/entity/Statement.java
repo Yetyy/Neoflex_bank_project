@@ -1,9 +1,11 @@
 package neoflex.deal.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import neoflex.deal.entity.enums.ApplicationStatus;
+import lombok.*;
+import neoflex.deal.enums.ApplicationStatus;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 import java.time.LocalDateTime;
@@ -15,6 +17,9 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Statement {
     @Id
     @GeneratedValue
@@ -28,10 +33,12 @@ public class Statement {
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
     private LocalDateTime creationDate;
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String appliedOffer;
     private LocalDateTime signDate;
     private String sesCode;
-    @Column(columnDefinition = "jsonb")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "statement_id")
     private List<StatusHistory> statusHistory;
 }

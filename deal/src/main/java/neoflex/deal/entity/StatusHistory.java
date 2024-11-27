@@ -1,9 +1,8 @@
 package neoflex.deal.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import neoflex.deal.entity.enums.ChangeType;
+import lombok.*;
+import neoflex.deal.enums.ChangeType;
 import java.util.UUID;
 import java.time.LocalDateTime;
 
@@ -13,6 +12,9 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StatusHistory {
     @Id
     @GeneratedValue

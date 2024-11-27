@@ -1,11 +1,10 @@
 package neoflex.deal;
 
 import neoflex.deal.entity.*;
-import neoflex.deal.entity.enums.*;
+import neoflex.deal.enums.*;
 import neoflex.deal.repository.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 

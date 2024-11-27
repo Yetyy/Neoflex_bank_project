@@ -18,6 +18,8 @@
 		<mockito-core>4.0.0</mockito-core>
 		<mockito-junit-jupiter>4.0.0</mockito-junit-jupiter>
 		<mockito-jupiter-engine>5.8.1</mockito-jupiter-engine>
+		<jackson-datatype-jsr310>2.13.3</jackson-datatype-jsr310>
+		<org.hibernate.orm>6.5.3.Final</org.hibernate.orm>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -69,6 +71,22 @@
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 	</dependencies>
 	<build>

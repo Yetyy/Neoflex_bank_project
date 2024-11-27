@@ -1,4 +1,4 @@
-package neoflex.deal.entity.enums;
+package neoflex.deal.enums;
 
 /**
  * Перечисление, представляющее статус заявки на кредит.

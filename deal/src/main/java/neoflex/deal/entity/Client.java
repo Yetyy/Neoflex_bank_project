@@ -1,10 +1,9 @@
 package neoflex.deal.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import neoflex.deal.entity.enums.Gender;
-import neoflex.deal.entity.enums.MaritalStatus;
+import lombok.*;
+import neoflex.deal.enums.Gender;
+import neoflex.deal.enums.MaritalStatus;
 import java.util.UUID;
 
 import java.time.LocalDate;
@@ -15,6 +14,9 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Client {
     @Id
     @GeneratedValue
@@ -36,4 +38,5 @@ public class Client {
     @JoinColumn(name = "employment_id", referencedColumnName = "employmentUid")
     private Employment employment;
     private String accountNumber;
+
 }
