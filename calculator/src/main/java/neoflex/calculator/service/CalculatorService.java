@@ -227,6 +227,8 @@ public class CalculatorService {
                 .rate(rate)
                 .monthlyPayment(monthlyPayment)
                 .psk(psk)
+                .isInsuranceEnabled(scoringData.getIsInsuranceEnabled())
+                .isSalaryClient(scoringData.getIsSalaryClient())
                 .paymentSchedule(paymentSchedule)
                 .build();
 

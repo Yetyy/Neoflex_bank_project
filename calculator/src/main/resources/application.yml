@@ -1,7 +1,8 @@
 spring:
   application:
     name: calculator
-
+server:
+  port: 8082
 base:
   interest:
     rate: 0.10
@@ -16,6 +17,13 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    enabled: true
 springdoc:
   api-docs:
     path: /api-docs
