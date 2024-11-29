@@ -58,6 +58,4 @@ public class LoanStatementRequestDto {
     @Pattern(regexp = "^[0-9]{6}$", message = "Номер паспорта должен содержать 6 цифр")
     private String passportNumber;
 
-    private EmploymentDto employment;
-    private String passport;
 }

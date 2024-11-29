@@ -1,8 +1,8 @@
 package neoflex.deal.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
 import java.util.UUID;
 
 import java.time.LocalDate;
@@ -13,6 +13,9 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Passport {
     @Id
     @GeneratedValue

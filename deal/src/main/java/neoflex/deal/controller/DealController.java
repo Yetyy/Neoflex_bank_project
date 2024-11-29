@@ -79,6 +79,8 @@ public class DealController {
     })
     public void finishRegistration(@PathVariable String statementId, @RequestBody FinishRegistrationRequestDto request) {
         logger.info("Получен запрос на завершение регистрации и полный подсчет кредита для заявки с ID: {}", statementId);
+        logger.info("Данные запроса: {}", request);
         dealService.finishRegistration(statementId, request);
     }
+
 }

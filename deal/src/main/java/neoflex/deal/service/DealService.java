@@ -1,11 +1,15 @@
 package neoflex.deal.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import neoflex.deal.dto.*;
 import neoflex.deal.entity.*;
 import neoflex.deal.enums.ApplicationStatus;
 import neoflex.deal.enums.ChangeType;
 import neoflex.deal.enums.CreditStatus;
+import neoflex.deal.mapper.PaymentScheduleElementMapper;
+import neoflex.deal.mapper.ScoringDataMapper;
 import neoflex.deal.repository.*;
 import neoflex.deal.util.DtoConverter;
 import org.slf4j.Logger;
@@ -39,6 +43,9 @@ public class DealService {
     private CreditRepository creditRepository;
 
     @Autowired
+    private PassportRepository passportRepository;
+
+    @Autowired
     private StatusHistoryRepository statusHistoryRepository;
 
     @Autowired
@@ -46,6 +53,9 @@ public class DealService {
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private ObjectMapper objectMapper;
     /**
      * Рассчитывает возможные условия кредита на основе данных заявки.
      *
@@ -59,7 +69,15 @@ public class DealService {
         }
         logger.info("Расчет возможных условий кредита для заявки: {}", request);
 
-        // Создание и сохранение клиента
+        // Создание и сохранение паспорта
+        Passport passport = Passport.builder()
+                .series(request.getPassportSeries())
+                .number(request.getPassportNumber())
+                .build();
+        passportRepository.save(passport);
+        //Заглушка так как Employment будет добавляться в МС statement
+
+        // Создание и сохранение клиента с использованием маппера
         Client client = Client.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -69,17 +87,15 @@ public class DealService {
                 .gender(request.getGender())
                 .maritalStatus(request.getMaritalStatus())
                 .dependentAmount(request.getDependentAmount())
+                .passport(passport)
                 .build();
         clientRepository.save(client);
-
         // Создание и сохранение заявки
         Statement statement = Statement.builder()
                 .client(client)
                 .status(ApplicationStatus.PREAPPROVAL)
                 .build();
         statementRepository.save(statement);
-
-
         List<LoanOfferDto> loanOffers = webClient.post()
                 .uri("/offers")
                 .body(Mono.just(request), LoanStatementRequestDto.class)
@@ -87,27 +103,35 @@ public class DealService {
                 .bodyToFlux(LoanOfferDto.class)
                 .collectList()
                 .block();
-
         // Присвоение id заявки каждому предложению
         loanOffers.forEach(offer -> offer.setStatementId(statement.getStatementId()));
 
         return loanOffers;
     }
 
+
     /**
      * Выбирает одно из предложений по кредиту.
      *
      * @param offer объект с данными выбранного предложения
      */
+    @Transactional
     public void selectLoanOffer(LoanOfferDto offer) {
-        logger.info("Выбор предложения по кредиту: {}", offer);
+        UUID statementId = offer.getStatementId();
+        Statement statement = statementRepository.findById(statementId)
+                .orElseThrow(() -> new IllegalArgumentException("Statement not found"));
 
-        // Получение заявки из БД
-        Statement statement = statementRepository.findById(offer.getStatementId()).orElseThrow();
+        // Сериализация LoanOfferDto в строку JSON
+        String appliedOfferJson;
+        try {
+            appliedOfferJson = objectMapper.writeValueAsString(offer);
+        } catch (Exception e) {
+            throw new RuntimeException("Error serializing LoanOfferDto to JSON", e);
+        }
 
-        // Обновление статуса заявки
+        // Обновление заявки
         statement.setStatus(ApplicationStatus.APPROVED);
-        statement.setAppliedOffer(offer.toString());
+        statement.setAppliedOffer(appliedOfferJson);
 
         // Обновление истории статусов
         StatusHistory statusHistory = StatusHistory.builder()
@@ -115,12 +139,19 @@ public class DealService {
                 .time(LocalDateTime.now())
                 .changeType(ChangeType.MANUAL)
                 .build();
-        statusHistoryRepository.save(statusHistory);
+        List<StatusHistory> statusHistoryList = statement.getStatusHistory();
+        statusHistoryList.add(statusHistory);
+        statement.setStatusHistory(statusHistoryList);
 
         // Сохранение заявки
         statementRepository.save(statement);
     }
-                                                            //ADD JAVA-DOC!!
+    /**
+     * Завершает регистрацию и выполняет полный подсчет кредита для заявки с указанным идентификатором.
+     *
+     * @param statementId идентификатор заявки
+     * @param request объект с данными для завершения регистрации
+     */
     public void finishRegistration(String statementId, FinishRegistrationRequestDto request) {
         logger.info("Завершение регистрации и полный подсчет кредита для заявки с ID: {}", statementId);
 
@@ -128,24 +159,7 @@ public class DealService {
         Statement statement = statementRepository.findById(UUID.fromString(statementId)).orElseThrow();
 
         // Создание и отправка запроса в МС Калькулятор
-        ScoringDataDto scoringData = ScoringDataDto.builder()
-                .amount(statement.getCredit().getAmount())
-                .term(statement.getCredit().getTerm())
-                .firstName(statement.getClient().getFirstName())
-                .lastName(statement.getClient().getLastName())
-                .middleName(statement.getClient().getMiddleName())
-                .gender(statement.getClient().getGender())
-                .birthdate(statement.getClient().getBirthDate())
-                .passportSeries(statement.getClient().getPassport().getSeries())
-                .passportNumber(statement.getClient().getPassport().getNumber())
-                .passportIssueDate(statement.getClient().getPassport().getIssueDate())
-                .maritalStatus(statement.getClient().getMaritalStatus())
-                .dependentAmount(statement.getClient().getDependentAmount())
-                .employment(request.getEmployment())
-                .accountNumber(statement.getClient().getAccountNumber())
-                .isInsuranceEnabled(statement.getCredit().isInsuranceEnabled())
-                .isSalaryClient(statement.getCredit().isSalaryClient())
-                .build();
+        ScoringDataDto scoringData = ScoringDataMapper.toScoringDataDto(statement, request);
 
         CreditDto creditDto = webClient.post()
                 .uri("/calc")
@@ -155,7 +169,7 @@ public class DealService {
                 .block();
 
         // Преобразование списка PaymentScheduleElementDto в список PaymentScheduleElement
-        List<PaymentScheduleElement> paymentScheduleElements = DtoConverter.convertToPaymentScheduleElements(creditDto.getPaymentSchedule());
+        List<PaymentScheduleElement> paymentScheduleElements = PaymentScheduleElementMapper.INSTANCE.toEntities(creditDto.getPaymentSchedule());
 
         // Создание и сохранение кредита
         Credit credit = Credit.builder()

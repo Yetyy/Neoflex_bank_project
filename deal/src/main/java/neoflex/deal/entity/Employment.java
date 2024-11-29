@@ -1,7 +1,6 @@
 package neoflex.deal.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import neoflex.deal.enums.EmploymentPosition;
 import neoflex.deal.enums.EmploymentStatus;
 
@@ -17,6 +16,9 @@ import java.math.BigDecimal;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Employment {
     @Id
     @GeneratedValue

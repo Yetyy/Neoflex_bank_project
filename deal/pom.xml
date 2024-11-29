@@ -15,11 +15,11 @@
 	<properties>
 		<java.version>21</java.version>
 		<springfox-boot-starter.version>3.0.0</springfox-boot-starter.version>
-		<mockito-core>4.0.0</mockito-core>
-		<mockito-junit-jupiter>4.0.0</mockito-junit-jupiter>
-		<mockito-jupiter-engine>5.8.1</mockito-jupiter-engine>
-		<jackson-datatype-jsr310>2.13.3</jackson-datatype-jsr310>
-		<org.hibernate.orm>6.5.3.Final</org.hibernate.orm>
+		<mockito-core.version>4.0.0</mockito-core.version>
+		<mockito-junit-jupiter.version>4.0.0</mockito-junit-jupiter.version>
+		<mockito-jupiter-engine.version>5.8.1</mockito-jupiter-engine.version>
+		<jackson-datatype-jsr310.version>2.13.3</jackson-datatype-jsr310.version>
+		<org.hibernate.orm.version>6.5.3.Final</org.hibernate.orm.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -99,11 +99,19 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>1.5.3.Final</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct-processor</artifactId>
+			<version>1.5.3.Final</version>
+			<scope>provided</scope>
+		</dependency>
+
+
 	</dependencies>
 	<build>
 		<plugins>
