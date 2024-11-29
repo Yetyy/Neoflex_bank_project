@@ -1,9 +1,11 @@
 spring:
+  application:
+    name: deal-service
   datasource:
     url: jdbc:postgresql://localhost:5432/deal
     username: postgres
     password: postgres
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  profiles:
+    active: dev
+server:
+  port: 8081

@@ -1,0 +1,6 @@
+calculator:
+  url: http://calculator:8082/calculator
+
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/deal

@@ -1,7 +1,6 @@
 package neoflex.deal.service;
 
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import neoflex.deal.dto.*;
 import neoflex.deal.entity.*;
 import neoflex.deal.enums.ApplicationStatus;
@@ -13,12 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import jakarta.validation.Valid;
-import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +27,6 @@ import java.util.UUID;
  */
 @Service
 public class DealService {
-
     private static final Logger logger = LoggerFactory.getLogger(DealService.class);
 
     @Autowired
@@ -45,11 +42,10 @@ public class DealService {
     private StatusHistoryRepository statusHistoryRepository;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private WebClient webClient;
 
     @Autowired
     private Validator validator;
-
     /**
      * Рассчитывает возможные условия кредита на основе данных заявки.
      *
@@ -61,7 +57,6 @@ public class DealService {
         if (!violations.isEmpty()) {
             throw new IllegalArgumentException("Invalid loan statement request: " + violations);
         }
-
         logger.info("Расчет возможных условий кредита для заявки: {}", request);
 
         // Создание и сохранение клиента
@@ -84,8 +79,14 @@ public class DealService {
                 .build();
         statementRepository.save(statement);
 
-        // Отправка запроса в МС Калькулятор
-        List<LoanOfferDto> loanOffers = restTemplate.postForObject("http://calculator/offers", request, List.class);
+
+        List<LoanOfferDto> loanOffers = webClient.post()
+                .uri("/offers")
+                .body(Mono.just(request), LoanStatementRequestDto.class)
+                .retrieve()
+                .bodyToFlux(LoanOfferDto.class)
+                .collectList()
+                .block();
 
         // Присвоение id заявки каждому предложению
         loanOffers.forEach(offer -> offer.setStatementId(statement.getStatementId()));
@@ -119,5 +120,59 @@ public class DealService {
         // Сохранение заявки
         statementRepository.save(statement);
     }
+                                                            //ADD JAVA-DOC!!
+    public void finishRegistration(String statementId, FinishRegistrationRequestDto request) {
+        logger.info("Завершение регистрации и полный подсчет кредита для заявки с ID: {}", statementId);
 
+        // Получение заявки из БД
+        Statement statement = statementRepository.findById(UUID.fromString(statementId)).orElseThrow();
+
+        // Создание и отправка запроса в МС Калькулятор
+        ScoringDataDto scoringData = ScoringDataDto.builder()
+                .amount(statement.getCredit().getAmount())
+                .term(statement.getCredit().getTerm())
+                .firstName(statement.getClient().getFirstName())
+                .lastName(statement.getClient().getLastName())
+                .middleName(statement.getClient().getMiddleName())
+                .gender(statement.getClient().getGender())
+                .birthdate(statement.getClient().getBirthDate())
+                .passportSeries(statement.getClient().getPassport().getSeries())
+                .passportNumber(statement.getClient().getPassport().getNumber())
+                .passportIssueDate(statement.getClient().getPassport().getIssueDate())
+                .maritalStatus(statement.getClient().getMaritalStatus())
+                .dependentAmount(statement.getClient().getDependentAmount())
+                .employment(request.getEmployment())
+                .accountNumber(statement.getClient().getAccountNumber())
+                .isInsuranceEnabled(statement.getCredit().isInsuranceEnabled())
+                .isSalaryClient(statement.getCredit().isSalaryClient())
+                .build();
+
+        CreditDto creditDto = webClient.post()
+                .uri("/calc")
+                .body(Mono.just(scoringData), ScoringDataDto.class)
+                .retrieve()
+                .bodyToMono(CreditDto.class)
+                .block();
+
+        // Преобразование списка PaymentScheduleElementDto в список PaymentScheduleElement
+        List<PaymentScheduleElement> paymentScheduleElements = DtoConverter.convertToPaymentScheduleElements(creditDto.getPaymentSchedule());
+
+        // Создание и сохранение кредита
+        Credit credit = Credit.builder()
+                .amount(creditDto.getAmount())
+                .term(creditDto.getTerm())
+                .monthlyPayment(creditDto.getMonthlyPayment())
+                .rate(creditDto.getRate())
+                .psk(creditDto.getPsk())
+                .paymentSchedule(paymentScheduleElements)
+                .insuranceEnabled(creditDto.getIsInsuranceEnabled())
+                .salaryClient(creditDto.getIsSalaryClient())
+                .creditStatus(CreditStatus.CALCULATED)
+                .build();
+        creditRepository.save(credit);
+
+        // Обновление статуса заявки
+        statement.setStatus(ApplicationStatus.DOCUMENT_CREATED);
+        statementRepository.save(statement);
+    }
 }

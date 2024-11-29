@@ -1,5 +1,0 @@
-# Created at 2024-11-20T17:40:01.620
-Boot Manifest-JAR contains absolute paths in classpath 'D:\Github\Neoflex_bank_project\Neoflex_bank_project\calculator\target\test-classes'
-Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
-'other' has different root
-

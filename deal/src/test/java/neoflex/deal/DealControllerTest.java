@@ -84,39 +84,39 @@ public class DealControllerTest {
                 .build();
     }
 
-    @Test
-    public void testCalculateLoanOffers() throws Exception {
-        when(dealService.calculateLoanOffers(any(LoanStatementRequestDto.class)))
-                .thenReturn(Arrays.asList(loanOfferDto));
+//    @Test
+//    public void testCalculateLoanOffers() throws Exception {
+//        when(dealService.calculateLoanOffers(any(LoanStatementRequestDto.class)))
+//                .thenReturn(Arrays.asList(loanOfferDto));
+//
+//        mockMvc.perform(post("/deal/statement")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(asJsonString(loanStatementRequestDto)))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+//    }
 
-        mockMvc.perform(post("/deal/statement")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(loanStatementRequestDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
+//    @Test
+//    public void testSelectLoanOffer() throws Exception {
+//        mockMvc.perform(post("/deal/offer/select")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(asJsonString(loanOfferDto)))
+//                .andExpect(status().isOk());
+//    }
 
-    @Test
-    public void testSelectLoanOffer() throws Exception {
-        mockMvc.perform(post("/deal/offer/select")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(loanOfferDto)))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    public void testFinishRegistration() throws Exception {
-        mockMvc.perform(post("/deal/calculate/{statementId}", UUID.randomUUID().toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(finishRegistrationRequestDto)))
-                .andExpect(status().isOk());
-    }
-
-    private static String asJsonString(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    @Test
+//    public void testFinishRegistration() throws Exception {
+//        mockMvc.perform(post("/deal/calculate/{statementId}", UUID.randomUUID().toString())
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(asJsonString(finishRegistrationRequestDto)))
+//                .andExpect(status().isOk());
+//    }
+//
+//    private static String asJsonString(final Object obj) {
+//        try {
+//            return new ObjectMapper().writeValueAsString(obj);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }

@@ -15,7 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -44,9 +46,26 @@ public class DealServiceTest {
     private StatusHistoryRepository statusHistoryRepository;
 
     @Mock
-    private RestTemplate restTemplate;
+    private WebClient webClient;
+
+    @Mock
+    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+
+    @Mock
+    private WebClient.RequestHeadersSpec requestHeadersSpec;
+
+    @Mock
+    private WebClient.RequestBodySpec requestBodySpec;
+
+    @Mock
+    private WebClient.RequestBodyUriSpec requestBodyUriSpec;
+
+    @Mock
+    private WebClient.ResponseSpec responseSpec;
+
     @Mock
     private Validator validator;
+
     @InjectMocks
     private DealService dealService;
 
@@ -162,8 +181,11 @@ public class DealServiceTest {
     public void testCalculateLoanOffers() {
         when(clientRepository.save(any(Client.class))).thenReturn(client);
         when(statementRepository.save(any(Statement.class))).thenReturn(statement);
-        when(restTemplate.postForObject(anyString(), any(LoanStatementRequestDto.class), eq(List.class)))
-                .thenReturn(Arrays.asList(loanOfferDto));
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.body(any(Mono.class), eq(LoanStatementRequestDto.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToFlux(LoanOfferDto.class)).thenReturn(Flux.just(loanOfferDto));
 
         List<LoanOfferDto> result = dealService.calculateLoanOffers(loanStatementRequestDto);
 
@@ -173,7 +195,7 @@ public class DealServiceTest {
 
         verify(clientRepository, times(1)).save(any(Client.class));
         verify(statementRepository, times(1)).save(any(Statement.class));
-        verify(restTemplate, times(1)).postForObject(anyString(), any(LoanStatementRequestDto.class), eq(List.class));
+        verify(webClient, times(1)).post();
     }
 
     @Test
@@ -191,7 +213,4 @@ public class DealServiceTest {
         verify(statusHistoryRepository, times(1)).save(any(StatusHistory.class));
         verify(statementRepository, times(1)).save(any(Statement.class));
     }
-
-
-
 }

@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres_deal_calculator
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: deal
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+  calculator:
+    build:
+      context: ./calculator
+      dockerfile: Dockerfile
+    container_name: calculator_service
+    ports:
+      - "8082:8082"
+    networks:
+      - app-network
+
+  deal:
+    build:
+      context: ./deal
+      dockerfile: Dockerfile
+    container_name: deal_service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - calculator
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
