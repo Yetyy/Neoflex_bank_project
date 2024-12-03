@@ -266,6 +266,7 @@ public class CalculatorService {
                     .remainingDebt(remainingPrincipal)
                     .build();
 
+            paymentSchedule.add(element);
         }
 
         logger.debug("Рассчитан график аннуитетных платежей: {}", paymentSchedule);
