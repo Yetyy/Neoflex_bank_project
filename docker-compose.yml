@@ -1,40 +1,40 @@
 version: '3.8'
+
 services:
   postgres:
     image: postgres:13
-    container_name: postgres_deal_calculator
     environment:
+      POSTGRES_DB: deal
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: deal
     ports:
       - "5432:5432"
-    networks:
-      - app-network
-
-  calculator:
-    build:
-      context: ./calculator
-      dockerfile: Dockerfile
-    container_name: calculator_service
-    ports:
-      - "8082:8082"
-    networks:
-      - app-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   deal:
     build:
       context: ./deal
       dockerfile: Dockerfile
-    container_name: deal_service
     ports:
-      - "8081:8081"
+      - "8081:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/deal
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
     depends_on:
       - postgres
-      - calculator
-    networks:
-      - app-network
 
-networks:
-  app-network:
-    driver: bridge
+  calculator:
+    build:
+      context: ./calculator
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:

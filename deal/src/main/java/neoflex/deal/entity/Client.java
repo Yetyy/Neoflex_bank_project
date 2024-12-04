@@ -2,10 +2,13 @@ package neoflex.deal.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import neoflex.deal.converter.EmploymentConverter;
+import neoflex.deal.converter.PassportConverter;
 import neoflex.deal.enums.Gender;
 import neoflex.deal.enums.MaritalStatus;
-import java.util.UUID;
+import org.hibernate.annotations.ColumnTransformer;
 
+import java.util.UUID;
 import java.time.LocalDate;
 
 /**
@@ -31,12 +34,16 @@ public class Client {
     @Enumerated(EnumType.STRING)
     private MaritalStatus maritalStatus;
     private int dependentAmount;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "passport_id", referencedColumnName = "passportUid")
-    private Passport passport;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "employment_id", referencedColumnName = "employmentUid")
-    private Employment employment;
-    private String accountNumber;
 
+    @Convert(converter = PassportConverter.class)
+    @Column(columnDefinition = "jsonb")
+    @ColumnTransformer(read = "passport::jsonb", write = "?::jsonb")
+    private Passport passport;
+
+    @Convert(converter = EmploymentConverter.class)
+    @Column(columnDefinition = "jsonb")
+    @ColumnTransformer(read = "employment::jsonb", write = "?::jsonb")
+    private Employment employment;
+
+    private String accountNumber;
 }

@@ -9,7 +9,6 @@ import java.util.UUID;
 
 import java.math.BigDecimal;
 
-
 /**
  * Сущность, представляющая информацию о занятости клиента.
  */

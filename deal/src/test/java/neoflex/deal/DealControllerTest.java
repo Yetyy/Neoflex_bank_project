@@ -1,8 +1,11 @@
 package neoflex.deal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import neoflex.deal.controller.DealController;
 import neoflex.deal.dto.*;
+import neoflex.deal.enums.EmploymentPosition;
+import neoflex.deal.enums.EmploymentStatus;
 import neoflex.deal.enums.Gender;
 import neoflex.deal.enums.MaritalStatus;
 import neoflex.deal.service.DealService;
@@ -19,7 +22,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -43,9 +45,14 @@ public class DealControllerTest {
     private LoanOfferDto loanOfferDto;
     private FinishRegistrationRequestDto finishRegistrationRequestDto;
 
+    private ObjectMapper objectMapper;
+
     @BeforeEach
     public void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(dealController).build();
+
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
 
         loanStatementRequestDto = LoanStatementRequestDto.builder()
                 .firstName("John")
@@ -79,44 +86,51 @@ public class DealControllerTest {
                 .dependentAmount(0)
                 .passportIssueDate(LocalDate.of(2020, 1, 1))
                 .passportIssueBranch("Branch1")
-                .employment(new EmploymentDto())
+                .employment(EmploymentDto.builder()
+                        .employmentStatus(EmploymentStatus.EMPLOYED)
+                        .employerINN("1234567890")
+                        .salary(BigDecimal.valueOf(50000))
+                        .position(EmploymentPosition.WORKER)
+                        .workExperienceTotal(5)
+                        .workExperienceCurrent(3)
+                        .build())
                 .accountNumber("1234567890")
                 .build();
     }
 
-//    @Test
-//    public void testCalculateLoanOffers() throws Exception {
-//        when(dealService.calculateLoanOffers(any(LoanStatementRequestDto.class)))
-//                .thenReturn(Arrays.asList(loanOfferDto));
-//
-//        mockMvc.perform(post("/deal/statement")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(asJsonString(loanStatementRequestDto)))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-//    }
+    @Test
+    public void testCalculateLoanOffers() throws Exception {
+        when(dealService.calculateLoanOffers(any(LoanStatementRequestDto.class)))
+                .thenReturn(Arrays.asList(loanOfferDto));
 
-//    @Test
-//    public void testSelectLoanOffer() throws Exception {
-//        mockMvc.perform(post("/deal/offer/select")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(asJsonString(loanOfferDto)))
-//                .andExpect(status().isOk());
-//    }
+        mockMvc.perform(post("/deal/statement")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(loanStatementRequestDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
 
-//    @Test
-//    public void testFinishRegistration() throws Exception {
-//        mockMvc.perform(post("/deal/calculate/{statementId}", UUID.randomUUID().toString())
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(asJsonString(finishRegistrationRequestDto)))
-//                .andExpect(status().isOk());
-//    }
-//
-//    private static String asJsonString(final Object obj) {
-//        try {
-//            return new ObjectMapper().writeValueAsString(obj);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
+    @Test
+    public void testSelectLoanOffer() throws Exception {
+        mockMvc.perform(post("/deal/offer/select")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(loanOfferDto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testFinishRegistration() throws Exception {
+        mockMvc.perform(post("/deal/calculate/{statementId}", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(finishRegistrationRequestDto)))
+                .andExpect(status().isOk());
+    }
+
+    private String asJsonString(final Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -1,4 +1,5 @@
 package neoflex.deal.controller;
+
 import neoflex.deal.dto.FinishRegistrationRequestDto;
 import neoflex.deal.dto.LoanOfferDto;
 import neoflex.deal.dto.LoanStatementRequestDto;
@@ -13,8 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.util.List;
+
 /**
  * Контроллер для обработки запросов, связанных с кредитными заявками.
  */
@@ -82,5 +83,4 @@ public class DealController {
         logger.info("Данные запроса: {}", request);
         dealService.finishRegistration(statementId, request);
     }
-
 }

@@ -27,12 +27,6 @@ public class EntityTest {
     private CreditRepository creditRepository;
 
     @Mock
-    private EmploymentRepository employmentRepository;
-
-    @Mock
-    private PassportRepository passportRepository;
-
-    @Mock
     private StatementRepository statementRepository;
 
     @Mock
@@ -40,11 +34,29 @@ public class EntityTest {
 
     @Test
     public void testClientEntity() {
-        Client client = new Client();
-        client.setFirstName("John");
-        client.setLastName("Doe");
-        client.setGender(Gender.MALE);
-        client.setMaritalStatus(MaritalStatus.SINGLE);
+        Passport passport = Passport.builder()
+                .series("1234")
+                .number("567890")
+                .issueBranch("Branch1")
+                .issueDate(LocalDate.now())
+                .build();
+        Employment employment = Employment.builder()
+                .status(EmploymentStatus.EMPLOYED)
+                .employerInn("1234567890")
+                .salary(BigDecimal.valueOf(50000))
+                .position(EmploymentPosition.WORKER)
+                .workExperienceTotal(5)
+                .workExperienceCurrent(3)
+                .build();
+
+        Client client = Client.builder()
+                .firstName("John")
+                .lastName("Doe")
+                .gender(Gender.MALE)
+                .maritalStatus(MaritalStatus.SINGLE)
+                .passport(passport)
+                .employment(employment)
+                .build();
 
         when(clientRepository.save(client)).thenReturn(client);
 
@@ -54,17 +66,21 @@ public class EntityTest {
         assertEquals("Doe", savedClient.getLastName());
         assertEquals(Gender.MALE, savedClient.getGender());
         assertEquals(MaritalStatus.SINGLE, savedClient.getMaritalStatus());
+        assertEquals("1234", savedClient.getPassport().getSeries());
+        assertEquals("567890", savedClient.getPassport().getNumber());
+        assertEquals(EmploymentStatus.EMPLOYED, savedClient.getEmployment().getStatus());
     }
 
     @Test
     public void testCreditEntity() {
-        Credit credit = new Credit();
-        credit.setAmount(BigDecimal.TEN);
-        credit.setTerm(12);
-        credit.setMonthlyPayment(BigDecimal.ONE);
-        credit.setRate(BigDecimal.valueOf(0.05));
-        credit.setPsk(BigDecimal.valueOf(0.01));
-        credit.setCreditStatus(CreditStatus.CALCULATED);
+        Credit credit = Credit.builder()
+                .amount(BigDecimal.TEN)
+                .term(12)
+                .monthlyPayment(BigDecimal.ONE)
+                .rate(BigDecimal.valueOf(0.05))
+                .psk(BigDecimal.valueOf(0.01))
+                .creditStatus(CreditStatus.CALCULATED)
+                .build();
 
         when(creditRepository.save(credit)).thenReturn(credit);
 
@@ -79,53 +95,14 @@ public class EntityTest {
     }
 
     @Test
-    public void testEmploymentEntity() {
-        Employment employment = new Employment();
-        employment.setStatus(EmploymentStatus.EMPLOYED);
-        employment.setEmployerInn("1234567890");
-        employment.setSalary(BigDecimal.valueOf(50000));
-        employment.setPosition(EmploymentPosition.WORKER);
-        employment.setWorkExperienceTotal(5);
-        employment.setWorkExperienceCurrent(3);
-
-        when(employmentRepository.save(employment)).thenReturn(employment);
-
-        Employment savedEmployment = employmentRepository.save(employment);
-        assertNotNull(savedEmployment);
-        assertEquals(EmploymentStatus.EMPLOYED, savedEmployment.getStatus());
-        assertEquals("1234567890", savedEmployment.getEmployerInn());
-        assertEquals(BigDecimal.valueOf(50000), savedEmployment.getSalary());
-        assertEquals(EmploymentPosition.WORKER, savedEmployment.getPosition());
-        assertEquals(5, savedEmployment.getWorkExperienceTotal());
-        assertEquals(3, savedEmployment.getWorkExperienceCurrent());
-    }
-
-    @Test
-    public void testPassportEntity() {
-        Passport passport = new Passport();
-        passport.setSeries("AB");
-        passport.setNumber("123456");
-        passport.setIssueBranch("Branch1");
-        passport.setIssueDate(LocalDate.now());
-
-        when(passportRepository.save(passport)).thenReturn(passport);
-
-        Passport savedPassport = passportRepository.save(passport);
-        assertNotNull(savedPassport);
-        assertEquals("AB", savedPassport.getSeries());
-        assertEquals("123456", savedPassport.getNumber());
-        assertEquals("Branch1", savedPassport.getIssueBranch());
-        assertEquals(LocalDate.now(), savedPassport.getIssueDate());
-    }
-
-    @Test
     public void testStatementEntity() {
         LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-        Statement statement = new Statement();
-        statement.setStatus(ApplicationStatus.PREAPPROVAL);
-        statement.setCreationDate(now);
-        statement.setSignDate(now);
-        statement.setSesCode("123456");
+        Statement statement = Statement.builder()
+                .status(ApplicationStatus.PREAPPROVAL)
+                .creationDate(now)
+                .signDate(now)
+                .sesCode("123456")
+                .build();
 
         when(statementRepository.save(statement)).thenReturn(statement);
 
@@ -140,10 +117,11 @@ public class EntityTest {
     @Test
     public void testStatusHistoryEntity() {
         LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-        StatusHistory statusHistory = new StatusHistory();
-        statusHistory.setStatus("APPROVED");
-        statusHistory.setTime(now);
-        statusHistory.setChangeType(ChangeType.MANUAL);
+        StatusHistory statusHistory = StatusHistory.builder()
+                .status("APPROVED")
+                .time(now)
+                .changeType(ChangeType.MANUAL)
+                .build();
 
         when(statusHistoryRepository.save(statusHistory)).thenReturn(statusHistory);
 
