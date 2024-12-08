@@ -14,14 +14,12 @@ import neoflex.calculator.dto.LoanStatementRequestDto;
 import neoflex.calculator.dto.LoanOfferDto;
 import neoflex.calculator.dto.ScoringDataDto;
 import neoflex.calculator.service.CalculatorService;
-import neoflex.calculator.util.AgeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -36,11 +34,6 @@ public class CalculatorController {
 
     private final CalculatorService loanOfferService;
 
-    /**
-     * Конструктор для инициализации сервиса кредитных предложений.
-     *
-     * @param loanOfferService сервис для генерации кредитных предложений
-     */
     @Autowired
     public CalculatorController(CalculatorService loanOfferService) {
         this.loanOfferService = loanOfferService;
@@ -63,17 +56,9 @@ public class CalculatorController {
     })
     public ResponseEntity<List<LoanOfferDto>> createLoanOffers(@RequestBody LoanStatementRequestDto request) {
         logger.info("Получен запрос LoanStatementRequestDto: {}", request);
-        try {
-            List<LoanOfferDto> loanOffers = loanOfferService.generateLoanOffers(request);
-            logger.info("Сгенерировано {} кредитных предложений.", loanOffers.size());
-            return ResponseEntity.ok(loanOffers);
-        } catch (IllegalArgumentException e) {
-            logger.error("Ошибка при генерации кредитных предложений: {}", e.getMessage());
-            return ResponseEntity
-                    .badRequest()
-                    .header("Error-Message", e.getMessage())
-                    .build();
-        }
+        List<LoanOfferDto> loanOffers = loanOfferService.generateLoanOffers(request);
+        logger.info("Сгенерировано {} кредитных предложений.", loanOffers.size());
+        return ResponseEntity.ok(loanOffers);
     }
 
     /**
@@ -93,17 +78,8 @@ public class CalculatorController {
     })
     public ResponseEntity<CreditDto> calculateCredit(@RequestBody ScoringDataDto scoringData) {
         logger.info("Получены данные для скоринга ScoringDataDto: {}", scoringData);
-
-        try {
-            CreditDto creditData = loanOfferService.calculateCredit(scoringData);
-            logger.info("Рассчитанные данные кредита CreditDto: {}", creditData);
-            return ResponseEntity.ok(creditData);
-        } catch (IllegalArgumentException e) {
-            logger.error("Ошибка при расчете кредита: {}", e.getMessage());
-            return ResponseEntity
-                    .badRequest()
-                    .header("Error-Message", e.getMessage())
-                    .build();
-        }
+        CreditDto creditData = loanOfferService.calculateCredit(scoringData);
+        logger.info("Рассчитанные данные кредита CreditDto: {}", creditData);
+        return ResponseEntity.ok(creditData);
     }
 }
