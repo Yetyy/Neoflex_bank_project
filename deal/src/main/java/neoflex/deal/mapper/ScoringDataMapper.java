@@ -20,13 +20,11 @@ public class ScoringDataMapper {
      */
     public static ScoringDataDto toScoringDataDto(Statement statement, FinishRegistrationRequestDto request) {
         Client client = statement.getClient();
-        // Credit credit = statement.getCredit(); // Это поле временно не используется
+        Credit credit = statement.getCredit();
 
         return ScoringDataDto.builder()
-//                .amount(credit.getAmount())
-//                .term(credit.getTerm())
-                .amount(BigDecimal.valueOf(100000)) // Заглушка
-                .term(12) // Заглушка
+                .amount(credit.getAmount())
+                .term(credit.getTerm())
                 .firstName(client.getFirstName())
                 .lastName(client.getLastName())
                 .middleName(client.getMiddleName())
@@ -39,10 +37,8 @@ public class ScoringDataMapper {
                 .dependentAmount(client.getDependentAmount())
                 .employment(request.getEmployment())
                 .accountNumber(client.getAccountNumber())
-//                .isInsuranceEnabled(credit.isInsuranceEnabled())
-//                .isSalaryClient(credit.isSalaryClient())
-                .isInsuranceEnabled(true) // Заглушка
-                .isSalaryClient(false) // Заглушка
+                .isInsuranceEnabled(credit.isInsuranceEnabled())
+                .isSalaryClient(credit.isSalaryClient())
                 .build();
     }
 }

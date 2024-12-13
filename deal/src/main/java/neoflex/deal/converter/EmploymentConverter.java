@@ -5,11 +5,21 @@ import jakarta.persistence.Converter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import neoflex.deal.entity.Employment;
 
+/**
+ * Конвертер для преобразования объектов {@link Employment} в JSON строку и обратно.
+ * Используется для хранения объектов {@link Employment} в базе данных в виде JSON.
+ */
 @Converter(autoApply = true)
 public class EmploymentConverter implements AttributeConverter<Employment, String> {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * Преобразует объект {@link Employment} в JSON строку для сохранения в базе данных.
+     *
+     * @param employment объект {@link Employment} для преобразования
+     * @return JSON строка, представляющая объект {@link Employment}
+     */
     @Override
     public String convertToDatabaseColumn(Employment employment) {
         if (employment == null) {
@@ -22,6 +32,12 @@ public class EmploymentConverter implements AttributeConverter<Employment, Strin
         }
     }
 
+    /**
+     * Преобразует JSON строку в объект {@link Employment}.
+     *
+     * @param dbData JSON строка, представляющая объект {@link Employment}
+     * @return объект {@link Employment}, созданный из JSON строки
+     */
     @Override
     public Employment convertToEntityAttribute(String dbData) {
         if (dbData == null) {
