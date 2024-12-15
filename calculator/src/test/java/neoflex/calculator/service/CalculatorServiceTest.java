@@ -1,10 +1,10 @@
 package neoflex.calculator.service;
 
-import neoflex.calculator.dto.*;
-import neoflex.calculator.enums.EmploymentStatus;
-import neoflex.calculator.enums.Gender;
-import neoflex.calculator.enums.MaritalStatus;
-import neoflex.calculator.enums.EmploymentPosition;
+import neoflex.dto.*;
+import neoflex.enums.EmploymentStatus;
+import neoflex.enums.Gender;
+import neoflex.enums.MaritalStatus;
+import neoflex.enums.EmploymentPosition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

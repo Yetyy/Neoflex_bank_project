@@ -1,8 +1,8 @@
 package neoflex.deal.entity;
 
 import lombok.*;
-import neoflex.deal.enums.EmploymentPosition;
-import neoflex.deal.enums.EmploymentStatus;
+import neoflex.enums.EmploymentPosition;
+import neoflex.enums.EmploymentStatus;
 
 import jakarta.persistence.*;
 import java.util.UUID;

@@ -1,7 +1,7 @@
 package neoflex.deal.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import neoflex.deal.dto.LoanOfferDto;
+import neoflex.dto.LoanOfferDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

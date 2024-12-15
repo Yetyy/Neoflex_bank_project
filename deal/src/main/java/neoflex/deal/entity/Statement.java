@@ -3,7 +3,7 @@ package neoflex.deal.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import neoflex.deal.converter.StatusHistoryConverter;
-import neoflex.deal.enums.ApplicationStatus;
+import neoflex.enums.ApplicationStatus;
 import org.hibernate.annotations.ColumnTransformer;
 
 import java.util.UUID;

@@ -1,17 +1,5 @@
-neoflex\calculator\dto\ScoringDataDto.class
-neoflex\calculator\enums\Gender.class
-neoflex\calculator\dto\CreditDto.class
-neoflex\calculator\dto\PaymentScheduleElementDto.class
-neoflex\calculator\dto\PaymentScheduleElementDto$PaymentScheduleElementDtoBuilder.class
-neoflex\calculator\dto\LoanStatementRequestDto.class
-neoflex\calculator\enums\MaritalStatus.class
-neoflex\calculator\dto\CreditDto$CreditDtoBuilder.class
-neoflex\calculator\dto\LoanOfferDto.class
 neoflex\calculator\controller\CalculatorController.class
-neoflex\calculator\enums\EmploymentPosition.class
-neoflex\calculator\enums\EmploymentStatus.class
 neoflex\calculator\service\CalculatorService$1.class
 neoflex\calculator\CalculatorApplication.class
 neoflex\calculator\util\AgeUtils.class
 neoflex\calculator\service\CalculatorService.class
-neoflex\calculator\dto\EmploymentDto.class

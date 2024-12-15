@@ -4,8 +4,8 @@
 package neoflex.calculator.service;
 
 import lombok.Getter;
-import neoflex.calculator.dto.*;
-import neoflex.calculator.enums.Gender;
+import neoflex.dto.*;
+import neoflex.enums.Gender;
 import neoflex.calculator.util.AgeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

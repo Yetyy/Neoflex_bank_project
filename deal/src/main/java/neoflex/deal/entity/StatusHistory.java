@@ -2,7 +2,7 @@ package neoflex.deal.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import neoflex.deal.enums.ChangeType;
+import neoflex.enums.ChangeType;
 import java.util.UUID;
 import java.time.LocalDateTime;
 

@@ -1,10 +1,10 @@
 package neoflex.deal.mapper;
 
-import neoflex.deal.dto.ScoringDataDto;
+import neoflex.dto.ScoringDataDto;
 import neoflex.deal.entity.Credit;
 import neoflex.deal.entity.Client;
 import neoflex.deal.entity.Statement;
-import neoflex.deal.dto.FinishRegistrationRequestDto;
+import neoflex.dto.FinishRegistrationRequestDto;
 
 import java.math.BigDecimal;
 /**

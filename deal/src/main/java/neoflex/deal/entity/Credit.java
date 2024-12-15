@@ -1,7 +1,7 @@
 package neoflex.deal.entity;
 
 import lombok.*;
-import neoflex.deal.enums.CreditStatus;
+import neoflex.enums.CreditStatus;
 
 import jakarta.persistence.*;
 import java.util.UUID;

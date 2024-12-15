@@ -1,8 +1,8 @@
 package neoflex.deal.controller;
 
-import neoflex.deal.dto.FinishRegistrationRequestDto;
-import neoflex.deal.dto.LoanOfferDto;
-import neoflex.deal.dto.LoanStatementRequestDto;
+import neoflex.dto.FinishRegistrationRequestDto;
+import neoflex.dto.LoanOfferDto;
+import neoflex.dto.LoanStatementRequestDto;
 import neoflex.deal.service.DealService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

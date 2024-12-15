@@ -1,7 +1,7 @@
 FROM openjdk:21-jdk
 
-VOLUME /tmp
+WORKDIR /app
 
-COPY target/calculator-0.0.1-SNAPSHOT.jar .
+COPY target/*.jar app.jar
 
-CMD ["java", "-jar", "calculator-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

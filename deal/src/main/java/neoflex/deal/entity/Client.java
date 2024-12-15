@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import neoflex.deal.converter.EmploymentConverter;
 import neoflex.deal.converter.PassportConverter;
-import neoflex.deal.enums.Gender;
-import neoflex.deal.enums.MaritalStatus;
+import neoflex.enums.Gender;
+import neoflex.enums.MaritalStatus;
 import org.hibernate.annotations.ColumnTransformer;
 
 import java.util.UUID;
