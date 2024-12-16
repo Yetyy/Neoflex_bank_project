@@ -16,37 +16,43 @@ import java.util.List;
  * Сущность, представляющая заявку на кредит.
  */
 @Entity
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Table(name = "statement")
 public class Statement {
     @Id
     @GeneratedValue
+    @Column(name = "statement_id")
     private UUID statementId;
 
     @OneToOne
-    @JoinColumn(name = "client_id", referencedColumnName = "clientId")
+    @JoinColumn(name = "client_id")
     private Client client;
 
     @OneToOne
-    @JoinColumn(name = "credit_id", referencedColumnName = "creditId")
+    @JoinColumn(name = "credit_id")
     private Credit credit;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private ApplicationStatus status;
 
+    @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column(name = "applied_offer", columnDefinition = "jsonb")
     private String appliedOffer;
 
+    @Column(name = "sign_date")
     private LocalDateTime signDate;
+
+    @Column(name = "ses_code")
     private String sesCode;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column(name = "status_history", columnDefinition = "jsonb")
     private List<StatusHistory> statusHistory;
 }

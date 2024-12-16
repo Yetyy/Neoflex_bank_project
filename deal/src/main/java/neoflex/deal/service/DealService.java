@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import lombok.RequiredArgsConstructor;
 import neoflex.dto.*;
 import neoflex.deal.entity.*;
 import neoflex.enums.ApplicationStatus;
@@ -30,26 +31,15 @@ import java.util.UUID;
  * Сервис для обработки бизнес-логики, связанной с кредитными заявками.
  */
 @Service
+@RequiredArgsConstructor
 public class DealService {
     private static final Logger logger = LoggerFactory.getLogger(DealService.class);
-
-    @Autowired
-    private ClientRepository clientRepository;
-
-    @Autowired
-    private StatementRepository statementRepository;
-
-    @Autowired
-    private CreditRepository creditRepository;
-
-    @Autowired
-    private WebClient webClient;
-
-    @Autowired
-    private Validator validator;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ClientRepository clientRepository;
+    private final StatementRepository statementRepository;
+    private final CreditRepository creditRepository;
+    private final WebClient webClient;
+    private final Validator validator;
+    private final ObjectMapper objectMapper;
 
     /**
      * Рассчитывает возможные условия кредита на основе данных заявки.
