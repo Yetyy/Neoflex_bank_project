@@ -4,8 +4,8 @@
 package neoflex.calculator.service;
 
 import lombok.Getter;
-import neoflex.calculator.dto.*;
-import neoflex.calculator.enums.Gender;
+import neoflex.dto.*;
+import neoflex.enums.Gender;
 import neoflex.calculator.util.AgeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,96 +144,101 @@ public class CalculatorService {
 
         BigDecimal rate = baseInterestRate;
 
-        //Применение правил скоринга по страховке
-        if (scoringData.getIsInsuranceEnabled()) {
-            rate = rate.subtract(INSURANCE_DISCOUNT);
-            scoringData.setAmount(scoringData.getAmount().add(scoringData.getAmount().multiply(INSURANCE_COST_RATE)));
-        }
+        try {
+            //Применение правил скоринга по страховке
+            if (scoringData.getIsInsuranceEnabled()) {
+                rate = rate.subtract(INSURANCE_DISCOUNT);
+                scoringData.setAmount(scoringData.getAmount().add(scoringData.getAmount().multiply(INSURANCE_COST_RATE)));
+            }
 
-        //Применение правил скоринга по зарплатному клиенту
-        if (scoringData.getIsSalaryClient()) {
-            rate = rate.subtract(SALARY_CLIENT_DISCOUNT);
-        }
-        // Применение правил скоринга по статусу занятости
-        switch (scoringData.getEmployment().getEmploymentStatus()) {
-            case UNEMPLOYED:
-                logger.warn("Заявка отклонена: Статус - безработный.");
-                throw new IllegalArgumentException("Отказ: статус - безработный.");
-            case SELF_EMPLOYED:
-                rate = rate.add(BigDecimal.valueOf(0.02));
-                break;
-            case BUSINESS_OWNER:
-                rate = rate.add(BigDecimal.valueOf(0.01));
-                break;
-            default:
-                break;
-        }
+            //Применение правил скоринга по зарплатному клиенту
+            if (scoringData.getIsSalaryClient()) {
+                rate = rate.subtract(SALARY_CLIENT_DISCOUNT);
+            }
+            // Применение правил скоринга по статусу занятости
+            switch (scoringData.getEmployment().getEmploymentStatus()) {
+                case UNEMPLOYED:
+                    logger.warn("Заявка отклонена: Статус - безработный.");
+                    throw new IllegalArgumentException("Отказ: статус - безработный.");
+                case SELF_EMPLOYED:
+                    rate = rate.add(BigDecimal.valueOf(0.02));
+                    break;
+                case BUSINESS_OWNER:
+                    rate = rate.add(BigDecimal.valueOf(0.01));
+                    break;
+                default:
+                    break;
+            }
 
-        // Применение правил скоринга по позиции на работе
-        switch (scoringData.getEmployment().getPosition()) {
-            case MIDDLE_MANAGER:
-                rate = rate.subtract(BigDecimal.valueOf(0.02));
-                break;
-            case TOP_MANAGER:
+            // Применение правил скоринга по позиции на работе
+            switch (scoringData.getEmployment().getPosition()) {
+                case MIDDLE_MANAGER:
+                    rate = rate.subtract(BigDecimal.valueOf(0.02));
+                    break;
+                case TOP_MANAGER:
+                    rate = rate.subtract(BigDecimal.valueOf(0.03));
+                    break;
+                default:
+                    break;
+            }
+
+            // Применение правил скоринга по сумме займа
+            if (scoringData.getAmount().compareTo(scoringData.getEmployment().getSalary().multiply(BigDecimal.valueOf(24))) > 0) {
+                logger.warn("Заявка отклонена: Сумма займа превышает 24 зарплаты.");
+                throw new IllegalArgumentException("Отказ: сумма займа больше, чем 24 зарплат.");
+            }
+
+            // Применение правил скоринга по семейному положению
+            switch (scoringData.getMaritalStatus()) {
+                case MARRIED:
+                    rate = rate.subtract(BigDecimal.valueOf(0.03));
+                    break;
+                case DIVORCED:
+                    rate = rate.add(BigDecimal.valueOf(0.01));
+                    break;
+                default:
+                    break;
+            }
+
+            // Применение правил скоринга по полу
+            int age = calculateAge(scoringData.getBirthdate(), LocalDate.now());
+            if (scoringData.getGender() == Gender.FEMALE && age >= 32 && age <= 60) {
                 rate = rate.subtract(BigDecimal.valueOf(0.03));
-                break;
-            default:
-                break;
-        }
-
-        // Применение правил скоринга по сумме займа
-        if (scoringData.getAmount().compareTo(scoringData.getEmployment().getSalary().multiply(BigDecimal.valueOf(24))) > 0) {
-            logger.warn("Заявка отклонена: Сумма займа превышает 24 зарплаты.");
-            throw new IllegalArgumentException("Отказ: сумма займа больше, чем 24 зарплат.");
-        }
-
-        // Применение правил скоринга по семейному положению
-        switch (scoringData.getMaritalStatus()) {
-            case MARRIED:
+            } else if (scoringData.getGender() == Gender.MALE && age >= 30 && age <= 55) {
                 rate = rate.subtract(BigDecimal.valueOf(0.03));
-                break;
-            case DIVORCED:
-                rate = rate.add(BigDecimal.valueOf(0.01));
-                break;
-            default:
-                break;
+            } else if (scoringData.getGender() == Gender.NON_BINARY) {
+                rate = rate.add(BigDecimal.valueOf(0.07));
+            }
+
+            // Применение правил скоринга по стажу работы
+            if (scoringData.getEmployment().getWorkExperienceTotal() < 18 || scoringData.getEmployment().getWorkExperienceCurrent() < 3) {
+                logger.warn("Заявка отклонена: Недостаточный стаж работы.");
+                throw new IllegalArgumentException("Отказ: стаж работы менее 18 месяцев или текущий стаж менее 3 месяцев.");
+            }
+
+            // Расчет аннуитентного платежа и ПСК
+            BigDecimal monthlyPayment = calculateAnnuityMonthlyPayment(scoringData.getAmount(), rate, scoringData.getTerm());
+            BigDecimal psk = monthlyPayment.multiply(BigDecimal.valueOf(scoringData.getTerm()));
+            List<PaymentScheduleElementDto> paymentSchedule = calculateAnnuityPaymentSchedule(scoringData.getAmount(), rate, scoringData.getTerm());
+
+            // Создание и возвращение CreditDto
+            CreditDto creditDto = CreditDto.builder()
+                    .amount(scoringData.getAmount())
+                    .term(scoringData.getTerm())
+                    .rate(rate)
+                    .monthlyPayment(monthlyPayment)
+                    .psk(psk)
+                    .isInsuranceEnabled(scoringData.getIsInsuranceEnabled())
+                    .isSalaryClient(scoringData.getIsSalaryClient())
+                    .paymentSchedule(paymentSchedule)
+                    .build();
+
+            logger.info("Рассчитанные данные кредита: {}", creditDto);
+            return creditDto;
+        } catch (IllegalArgumentException e) {
+            logger.error("Ошибка при расчете кредита: {}", e.getMessage());
+            throw e;
         }
-
-        // Применение правил скоринга по полу
-        int age = calculateAge(scoringData.getBirthdate(), LocalDate.now());
-        if (scoringData.getGender() == Gender.FEMALE && age >= 32 && age <= 60) {
-            rate = rate.subtract(BigDecimal.valueOf(0.03));
-        } else if (scoringData.getGender() == Gender.MALE && age >= 30 && age <= 55) {
-            rate = rate.subtract(BigDecimal.valueOf(0.03));
-        } else if (scoringData.getGender() == Gender.NON_BINARY) {
-            rate = rate.add(BigDecimal.valueOf(0.07));
-        }
-
-        // Применение правил скоринга по стажу работы
-        if (scoringData.getEmployment().getWorkExperienceTotal() < 18 || scoringData.getEmployment().getWorkExperienceCurrent() < 3) {
-            logger.warn("Заявка отклонена: Недостаточный стаж работы.");
-            throw new IllegalArgumentException("Отказ: стаж работы менее 18 месяцев или текущий стаж менее 3 месяцев.");
-        }
-
-        // Расчет аннуитентного платежа и ПСК
-        BigDecimal monthlyPayment = calculateAnnuityMonthlyPayment(scoringData.getAmount(), rate, scoringData.getTerm());
-        BigDecimal psk = monthlyPayment.multiply(BigDecimal.valueOf(scoringData.getTerm()));
-        List<PaymentScheduleElementDto> paymentSchedule = calculateAnnuityPaymentSchedule(scoringData.getAmount(), rate, scoringData.getTerm());
-
-        // Создание и возвращение CreditDto
-        CreditDto creditDto = CreditDto.builder()
-                .amount(scoringData.getAmount())
-                .term(scoringData.getTerm())
-                .rate(rate)
-                .monthlyPayment(monthlyPayment)
-                .psk(psk)
-                .isInsuranceEnabled(scoringData.getIsInsuranceEnabled())
-                .isSalaryClient(scoringData.getIsSalaryClient())
-                .paymentSchedule(paymentSchedule)
-                .build();
-
-        logger.info("Рассчитанные данные кредита: {}", creditDto);
-        return creditDto;
     }
 
     /**
