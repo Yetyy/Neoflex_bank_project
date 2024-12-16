@@ -2,9 +2,11 @@ package neoflex.deal.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import neoflex.deal.converter.StatusHistoryConverter;
+
 import neoflex.enums.ApplicationStatus;
 import org.hibernate.annotations.ColumnTransformer;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 import java.time.LocalDateTime;
@@ -37,15 +39,14 @@ public class Statement {
 
     private LocalDateTime creationDate;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    @ColumnTransformer(read = "applied_offer::jsonb", write = "?::jsonb")
     private String appliedOffer;
 
     private LocalDateTime signDate;
     private String sesCode;
 
-    @Convert(converter = StatusHistoryConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    @ColumnTransformer(read = "status_history::jsonb", write = "?::jsonb")
     private List<StatusHistory> statusHistory;
 }

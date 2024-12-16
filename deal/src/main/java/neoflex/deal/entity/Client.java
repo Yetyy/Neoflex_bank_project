@@ -2,11 +2,12 @@ package neoflex.deal.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import neoflex.deal.converter.EmploymentConverter;
-import neoflex.deal.converter.PassportConverter;
+
 import neoflex.enums.Gender;
 import neoflex.enums.MaritalStatus;
 import org.hibernate.annotations.ColumnTransformer;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 import java.time.LocalDate;
@@ -35,14 +36,12 @@ public class Client {
     private MaritalStatus maritalStatus;
     private int dependentAmount;
 
-    @Convert(converter = PassportConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    @ColumnTransformer(read = "passport::jsonb", write = "?::jsonb")
     private Passport passport;
 
-    @Convert(converter = EmploymentConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    @ColumnTransformer(read = "employment::jsonb", write = "?::jsonb")
     private Employment employment;
 
     private String accountNumber;
