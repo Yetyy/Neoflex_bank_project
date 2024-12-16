@@ -14,8 +14,8 @@ services:
 
   deal:
     build:
-      context: ./deal
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./deal/Dockerfile
     ports:
       - "8081:8081"
     environment:
@@ -27,8 +27,8 @@ services:
 
   calculator:
     build:
-      context: ./calculator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./calculator/Dockerfile
     ports:
       - "8082:8082"
     environment:
