@@ -14,7 +14,7 @@ spring:
         show_sql: true
         jdbc.lob.non_contextual_creation: true
   profiles:
-    active: docker
+    active: dev
 server:
   port: 8081
 springdoc:

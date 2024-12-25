@@ -325,13 +325,15 @@ public class DealService {
      * @return сохраненный кредит
      */
     private Credit createAndSaveCredit(CreditDto creditDto, List<PaymentScheduleElement> paymentScheduleElements) {
+        String paymentScheduleJson = SerializationUtil.serializePaymentSchedule(paymentScheduleElements, objectMapper);
+
         Credit credit = Credit.builder()
                 .amount(creditDto.getAmount())
                 .term(creditDto.getTerm())
                 .monthlyPayment(creditDto.getMonthlyPayment())
                 .rate(creditDto.getRate())
                 .psk(creditDto.getPsk())
-                .paymentSchedule(paymentScheduleElements)
+                .paymentSchedule(paymentScheduleJson)
                 .insuranceEnabled(creditDto.getIsInsuranceEnabled())
                 .salaryClient(creditDto.getIsSalaryClient())
                 .creditStatus(CreditStatus.CALCULATED)
@@ -340,6 +342,7 @@ public class DealService {
         logger.info("Кредит сохранен: {}", credit);
         return credit;
     }
+
 
     /**
      * Обновляет статус заявки.

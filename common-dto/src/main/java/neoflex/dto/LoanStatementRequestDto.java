@@ -6,7 +6,6 @@ package neoflex.dto;
 import lombok.*;
 import neoflex.enums.Gender;
 import neoflex.enums.MaritalStatus;
-
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -57,5 +56,4 @@ public class LoanStatementRequestDto {
 
     @Pattern(regexp = "^[0-9]{6}$", message = "Номер паспорта должен содержать 6 цифр")
     private String passportNumber;
-
 }

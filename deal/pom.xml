@@ -26,6 +26,7 @@
 		<mapstruct.version>1.5.3.Final</mapstruct.version>
 		<lombok.version>1.18.30</lombok.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<liquibase.version>4.15.0</liquibase.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -117,6 +118,11 @@
 			<version>${mapstruct.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+			<version>${liquibase.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -151,6 +157,18 @@
 							<version>${lombok.version}</version>
 						</path>
 					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-maven-plugin</artifactId>
+				<version>${liquibase.version}</version>
+				<configuration>
+					<changeLogFile>src/main/resources/db/changelog/db.changelog-master.xml</changeLogFile>
+					<url>jdbc:postgresql://localhost:5432/your_database_name</url>
+					<username>your_database_username</username>
+					<password>your_database_password</password>
+					<driver>org.postgresql.Driver</driver>
 				</configuration>
 			</plugin>
 		</plugins>
