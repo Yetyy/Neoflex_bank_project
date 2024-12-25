@@ -4,9 +4,12 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.xml
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: true
@@ -14,7 +17,7 @@ spring:
         show_sql: true
         jdbc.lob.non_contextual_creation: true
   profiles:
-    active: dev
+    active: docker
 server:
   port: 8081
 springdoc:
