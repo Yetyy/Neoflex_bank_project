@@ -213,9 +213,6 @@ public class DealService {
         logger.info("Кредитное предложение успешно выбрано: {}", statement);
     }
 
-
-
-
     /**
      * Получает заявку по ID.
      *
@@ -226,8 +223,6 @@ public class DealService {
         return statementRepository.findById(statementId)
                 .orElseThrow(() -> new IllegalArgumentException("Заявка с ID " + statementId + " не найдена"));
     }
-
-
 
     /**
      * Обновляет заявку с новым статусом и примененным предложением.
@@ -342,7 +337,6 @@ public class DealService {
         logger.info("Кредит сохранен: {}", credit);
         return credit;
     }
-
 
     /**
      * Обновляет статус заявки.

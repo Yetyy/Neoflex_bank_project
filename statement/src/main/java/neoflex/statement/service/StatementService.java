@@ -10,6 +10,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * Сервис для обработки заявки на кредит.
+ */
 @Service
 public class StatementService {
 
@@ -18,33 +21,56 @@ public class StatementService {
     @Autowired
     private WebClient webClient;
 
+    /**
+     * Получает предложения по кредиту на основе заявки.
+     *
+     * @param requestDto объект с данными заявки на кредит
+     * @return список предложений по кредиту
+     * @throws RuntimeException если произошла ошибка при получении предложений
+     */
     public List<LoanOfferDto> getLoanOffers(LoanStatementRequestDto requestDto) {
-        logger.info("Received loan statement request: {}", requestDto);
+        logger.info("Получен запрос на прескоринг и расчет условий кредита: {}", requestDto);
 
-        // Отправляем запрос в микросервис deal
-        List<LoanOfferDto> loanOffers = webClient.post()
-                .uri("/deal/statement")
-                .body(Mono.just(requestDto), LoanStatementRequestDto.class)
-                .retrieve()
-                .bodyToFlux(LoanOfferDto.class)
-                .collectList()
-                .block();
+        try {
+            // Отправляем запрос в микросервис deal
+            List<LoanOfferDto> loanOffers = webClient.post()
+                    .uri("/deal/statement")
+                    .body(Mono.just(requestDto), LoanStatementRequestDto.class)
+                    .retrieve()
+                    .bodyToFlux(LoanOfferDto.class)
+                    .collectList()
+                    .block();
 
-        logger.info("Received loan offers: {}", loanOffers);
-        return loanOffers;
+            logger.info("Получены предложения по кредиту: {}", loanOffers);
+            return loanOffers;
+        } catch (Exception e) {
+            logger.error("Ошибка при вызове микросервиса deal для прескоринга: {}", e.getMessage());
+            throw new RuntimeException("Ошибка при получении предложений по кредиту", e);
+        }
     }
 
+    /**
+     * Выбирает одно из предложений по кредиту.
+     *
+     * @param offerDto объект с данными выбранного кредитного предложения
+     * @throws RuntimeException если произошла ошибка при выборе предложения
+     */
     public void selectLoanOffer(LoanOfferDto offerDto) {
-        logger.info("Received loan offer selection: {}", offerDto);
+        logger.info("Получен запрос на выбор кредитного предложения: {}", offerDto);
 
-        // Отправляем запрос в микросервис deal
-        webClient.post()
-                .uri("/deal/offer/select")
-                .body(Mono.just(offerDto), LoanOfferDto.class)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .block();
+        try {
+            // Отправляем запрос в микросервис deal
+            webClient.post()
+                    .uri("/deal/offer/select")
+                    .body(Mono.just(offerDto), LoanOfferDto.class)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
 
-        logger.info("Loan offer selected successfully");
+            logger.info("Кредитное предложение успешно выбрано");
+        } catch (Exception e) {
+            logger.error("Ошибка при выборе кредитного предложения: {}", e.getMessage());
+            throw new RuntimeException("Ошибка при выборе кредитного предложения", e);
+        }
     }
 }
