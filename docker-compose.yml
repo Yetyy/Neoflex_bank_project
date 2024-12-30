@@ -36,5 +36,14 @@ services:
       - SERVER_PORT=8082
       - BASE_INTEREST_RATE=0.10
 
+  statement:
+    build:
+      context: .
+      dockerfile: ./statement/Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
 volumes:
   postgres_data:

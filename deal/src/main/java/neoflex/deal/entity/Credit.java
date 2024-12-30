@@ -4,6 +4,9 @@ import lombok.*;
 import neoflex.enums.CreditStatus;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 import java.math.BigDecimal;
@@ -39,9 +42,9 @@ public class Credit {
     @Column(name = "psk")
     private BigDecimal psk;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "credit_id")
-    private List<PaymentScheduleElement> paymentSchedule;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "payment_schedule", columnDefinition = "jsonb")
+    private String paymentSchedule;
 
     @Column(name = "insurance_enabled")
     private boolean insuranceEnabled;
