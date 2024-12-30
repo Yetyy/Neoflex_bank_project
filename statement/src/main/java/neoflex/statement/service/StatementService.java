@@ -1,9 +1,9 @@
 package neoflex.statement.service;
 
+import lombok.RequiredArgsConstructor;
 import neoflex.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -14,12 +14,12 @@ import java.util.List;
  * Сервис для обработки заявки на кредит.
  */
 @Service
+@RequiredArgsConstructor
 public class StatementService {
 
     private static final Logger logger = LoggerFactory.getLogger(StatementService.class);
 
-    @Autowired
-    private WebClient webClient;
+    private final WebClient webClient;
 
     /**
      * Получает предложения по кредиту на основе заявки.

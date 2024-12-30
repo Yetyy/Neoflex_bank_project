@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="1" author="neoflex">
+        <createTable tableName="client">
+            <column name="client_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="last_name" type="varchar(255)"/>
+            <column name="first_name" type="varchar(255)"/>
+            <column name="middle_name" type="varchar(255)"/>
+            <column name="birth_date" type="date"/>
+            <column name="email" type="varchar(255)"/>
+            <column name="gender" type="varchar(50)"/>
+            <column name="marital_status" type="varchar(50)"/>
+            <column name="dependent_amount" type="int"/>
+            <column name="passport" type="jsonb"/>
+            <column name="employment" type="jsonb"/>
+            <column name="account_number" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="neoflex">
+        <createTable tableName="credit">
+            <column name="credit_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="amount" type="numeric(19,2)"/>
+            <column name="term" type="int"/>
+            <column name="monthly_payment" type="numeric(19,2)"/>
+            <column name="rate" type="numeric(19,2)"/>
+            <column name="psk" type="numeric(19,2)"/>
+            <column name="payment_schedule" type="jsonb"/>
+            <column name="insurance_enabled" type="boolean"/>
+            <column name="salary_client" type="boolean"/>
+            <column name="credit_status" type="varchar(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="3" author="neoflex">
+        <createTable tableName="employment">
+            <column name="employment_uid" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="status" type="varchar(50)"/>
+            <column name="employer_inn" type="varchar(255)"/>
+            <column name="salary" type="numeric(19,2)"/>
+            <column name="position" type="varchar(50)"/>
+            <column name="work_experience_total" type="int"/>
+            <column name="work_experience_current" type="int"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="4" author="neoflex">
+        <createTable tableName="passport">
+            <column name="passport_uid" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="series" type="varchar(50)"/>
+            <column name="number" type="varchar(50)"/>
+            <column name="issue_branch" type="varchar(255)"/>
+            <column name="issue_date" type="date"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="5" author="neoflex">
+        <createTable tableName="payment_schedule_element">
+            <column name="payment_schedule_element_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="number" type="int"/>
+            <column name="date" type="date"/>
+            <column name="total_payment" type="numeric(19,2)"/>
+            <column name="interest_payment" type="numeric(19,2)"/>
+            <column name="debt_payment" type="numeric(19,2)"/>
+            <column name="remaining_debt" type="numeric(19,2)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="6" author="neoflex">
+        <createTable tableName="statement">
+            <column name="statement_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="client_id" type="uuid"/>
+            <column name="credit_id" type="uuid"/>
+            <column name="status" type="varchar(50)"/>
+            <column name="creation_date" type="timestamp"/>
+            <column name="applied_offer" type="jsonb"/>
+            <column name="sign_date" type="timestamp"/>
+            <column name="ses_code" type="varchar(255)"/>
+            <column name="status_history" type="jsonb"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="7" author="neoflex">
+        <createTable tableName="status_history">
+            <column name="status_history_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="status" type="varchar(50)"/>
+            <column name="time" type="timestamp"/>
+            <column name="change_type" type="varchar(50)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import neoflex.dto.LoanOfferDto;
 import neoflex.dto.LoanStatementRequestDto;
 import neoflex.statement.service.StatementService;
@@ -19,13 +20,12 @@ import java.util.List;
  * Контроллер для обработки запросов, связанных с заявками на кредит.
  */
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/statement")
 public class StatementController {
 
     private static final Logger logger = LoggerFactory.getLogger(StatementController.class);
-
-    @Autowired
-    private StatementService statementService;
+    private final StatementService statementService;
 
     /**
      * Обрабатывает запрос на прескоринг и расчет возможных условий кредита.
