@@ -16,8 +16,6 @@ spring:
         use_sql_comments: true
         show_sql: true
         jdbc.lob.non_contextual_creation: true
-  profiles:
-    active: docker
   kafka:
     bootstrap-servers: kafka:9092
     producer:
@@ -52,3 +50,8 @@ management:
         include: "*"
   health:
     enabled: true
+
+calculator:
+  url: http://calculator:8082/calculator
+
+

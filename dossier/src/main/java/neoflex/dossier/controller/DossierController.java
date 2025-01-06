@@ -5,7 +5,6 @@ import neoflex.dossier.service.EmailService;
 import neoflex.dto.EmailMessage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
@@ -14,6 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Контроллер для обработки запросов, связанных с досье.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/dossier")
@@ -22,6 +24,12 @@ public class DossierController {
     private static final Logger logger = LoggerFactory.getLogger(DossierController.class);
     private final EmailService emailService;
 
+    /**
+     * Отправляет письмо клиенту.
+     *
+     * @param emailMessage сообщение email
+     * @return ответ с результатом операции
+     */
     @PostMapping("/send-email")
     @Operation(summary = "Отправка письма", description = "Отправляет письмо клиенту")
     @ApiResponses(value = {
@@ -45,6 +53,11 @@ public class DossierController {
         }
     }
 
+    /**
+     * Обрабатывает сообщение email в зависимости от его темы.
+     *
+     * @param emailMessage сообщение email
+     */
     private void processEmailMessage(EmailMessage emailMessage) {
         switch (emailMessage.getTheme()) {
             case FINISH_REGISTRATION:
@@ -64,6 +77,12 @@ public class DossierController {
                 break;
             case STATEMENT_DENIED:
                 emailService.sendStatementDeniedEmail(emailMessage);
+                break;
+            case SIGN_DOCUMENTS:
+                emailService.sendSignDocumentsEmail(emailMessage);
+                break;
+            case CODE_DOCUMENTS:
+                emailService.sendCodeDocumentsEmail(emailMessage);
                 break;
             default:
                 logger.warn("Неизвестная тема письма: {}", emailMessage.getTheme());
