@@ -14,6 +14,7 @@ import neoflex.deal.mapper.PaymentScheduleElementMapper;
 import neoflex.deal.mapper.ScoringDataMapper;
 import neoflex.deal.repository.*;
 import neoflex.deal.util.SerializationUtil;
+import neoflex.enums.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public class DealService {
      * @param request объект с данными заявки на кредит
      * @return список предложений по кредиту
      */
+    @Transactional
     public List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto request) {
         logger.info("Получен запрос на расчет возможных условий кредита: {}", request);
 
@@ -180,16 +182,14 @@ public class DealService {
      * @param offer объект с данными выбранного кредитного предложения
      */
     @Transactional
-    public void selectLoanOffer(LoanOfferDto offer) {
+    public EmailMessage selectLoanOffer(LoanOfferDto offer) {
         logger.info("Выбор кредитного предложения: {}", offer);
 
         Statement statement = getStatementById(offer.getStatementId());
         String appliedOfferJson = SerializationUtil.serializeLoanOffer(offer, objectMapper);
 
-        // Десериализация appliedOfferJson в LoanOfferDto
         LoanOfferDto appliedOfferDto = SerializationUtil.deserializeLoanOffer(appliedOfferJson, objectMapper);
 
-        // Обновление поля кредита в заявке информацией из appliedOfferDto
         Credit credit = statement.getCredit();
         if (credit == null) {
             credit = new Credit();
@@ -201,7 +201,6 @@ public class DealService {
         credit.setInsuranceEnabled(appliedOfferDto.isInsuranceEnabled());
         credit.setSalaryClient(appliedOfferDto.isSalaryClient());
 
-        // Сохранение сущности кредита
         credit = creditRepository.save(credit);
 
         statement.setCredit(credit);
@@ -211,7 +210,10 @@ public class DealService {
 
         statementRepository.save(statement);
         logger.info("Кредитное предложение успешно выбрано: {}", statement);
+
+        return new EmailMessage(statement.getStatementId(), Theme.FINISH_REGISTRATION, statement.getClient().getEmail());
     }
+
 
     /**
      * Получает заявку по ID.
@@ -261,7 +263,8 @@ public class DealService {
      * @param statementId идентификатор заявки
      * @param request    объект с данными для завершения регистрации
      */
-    public void finishRegistration(String statementId, FinishRegistrationRequestDto request) {
+    @Transactional
+    public EmailMessage finishRegistration(String statementId, FinishRegistrationRequestDto request) {
         logger.info("Завершение регистрации и полный подсчет кредита для заявки с ID: {}", statementId);
 
         Statement statement = getStatementById(UUID.fromString(statementId));
@@ -275,6 +278,8 @@ public class DealService {
         updateStatementStatus(statement, ApplicationStatus.DOCUMENT_CREATED);
 
         logger.info("Статус заявки обновлен: {}", statement);
+
+        return new EmailMessage(statement.getStatementId(), Theme.FINISH_REGISTRATION, statement.getClient().getEmail());
     }
 
     /**
@@ -347,5 +352,40 @@ public class DealService {
     private void updateStatementStatus(Statement statement, ApplicationStatus status) {
         statement.setStatus(status);
         statementRepository.save(statement);
+    }
+    /**
+     * Отправляет документы для заявки с указанным идентификатором.
+     *
+     * @param statementId идентификатор заявки
+     * @return объект EmailMessage с информацией для отправки email
+     */
+    @Transactional
+    public EmailMessage sendDocuments(String statementId) {
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        return new EmailMessage(statement.getStatementId(), Theme.SEND_DOCUMENTS, statement.getClient().getEmail());
+    }
+
+    /**
+     * Подписывает документы для заявки с указанным идентификатором.
+     *
+     * @param statementId идентификатор заявки
+     * @return объект EmailMessage с информацией для отправки email
+     */
+    @Transactional
+    public EmailMessage signDocuments(String statementId) {
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        return new EmailMessage(statement.getStatementId(), Theme.SIGN_DOCUMENTS, statement.getClient().getEmail());
+    }
+
+    /**
+     * Кодирует документы для заявки с указанным идентификатором.
+     *
+     * @param statementId идентификатор заявки
+     * @return объект EmailMessage с информацией для отправки email
+     */
+    @Transactional
+    public EmailMessage codeDocuments(String statementId) {
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        return new EmailMessage(statement.getStatementId(), Theme.CODE_DOCUMENTS, statement.getClient().getEmail());
     }
 }

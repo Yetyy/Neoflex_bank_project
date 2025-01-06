@@ -11,6 +11,7 @@
         <module>calculator</module>
         <module>deal</module>
         <module>statement</module>
+        <module>dossier</module>
     </modules>
     <properties>
         <java.version>21</java.version>
