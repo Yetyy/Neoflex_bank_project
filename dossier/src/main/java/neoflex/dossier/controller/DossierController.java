@@ -78,12 +78,6 @@ public class DossierController {
             case STATEMENT_DENIED:
                 emailService.sendStatementDeniedEmail(emailMessage);
                 break;
-//            case SIGN_DOCUMENTS:
-//                emailService.sendSignDocumentsEmail(emailMessage);
-//                break;
-//            case CODE_DOCUMENTS:
-//                emailService.sendCodeDocumentsEmail(emailMessage);
-//                break;
             default:
                 logger.warn("Неизвестная тема письма: {}", emailMessage.getTheme());
                 throw new IllegalArgumentException("Неизвестная тема письма: " + emailMessage.getTheme());

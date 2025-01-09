@@ -9,6 +9,7 @@ import neoflex.enums.EmploymentStatus;
 import neoflex.enums.Gender;
 import neoflex.enums.MaritalStatus;
 import neoflex.deal.service.DealService;
+import neoflex.enums.Theme;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -23,9 +25,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,6 +39,9 @@ public class DealControllerTest {
     @Mock
     private DealService dealService;
 
+    @Mock
+    private KafkaTemplate<String, EmailMessage> kafkaTemplate;
+
     @InjectMocks
     private DealController dealController;
 
@@ -44,6 +50,7 @@ public class DealControllerTest {
     private LoanStatementRequestDto loanStatementRequestDto;
     private LoanOfferDto loanOfferDto;
     private FinishRegistrationRequestDto finishRegistrationRequestDto;
+    private EmailMessage emailMessage;
 
     private ObjectMapper objectMapper;
 
@@ -96,6 +103,12 @@ public class DealControllerTest {
                         .build())
                 .accountNumber("1234567890")
                 .build();
+
+        emailMessage = EmailMessage.builder()
+                .statementId(UUID.randomUUID())
+                .theme(Theme.FINISH_REGISTRATION)
+                .text("Test Message")
+                .build();
     }
 
     @Test
@@ -112,18 +125,70 @@ public class DealControllerTest {
 
     @Test
     public void testSelectLoanOffer() throws Exception {
+        when(dealService.selectLoanOffer(any(LoanOfferDto.class))).thenReturn(emailMessage);
+        when(kafkaTemplate.send(eq("finish-registration"), any(EmailMessage.class)))
+                .thenReturn(CompletableFuture.completedFuture(null));
+
         mockMvc.perform(post("/deal/offer/select")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(loanOfferDto)))
                 .andExpect(status().isOk());
+
+        verify(kafkaTemplate, times(1)).send(eq("finish-registration"), any(EmailMessage.class));
     }
 
     @Test
     public void testFinishRegistration() throws Exception {
-        mockMvc.perform(post("/deal/calculate/{statementId}", UUID.randomUUID().toString())
+        UUID statementId = UUID.randomUUID();
+        when(dealService.finishRegistration(eq(statementId.toString()), any(FinishRegistrationRequestDto.class))).thenReturn(emailMessage);
+        when(kafkaTemplate.send(eq("create-documents"), any(EmailMessage.class)))
+                .thenReturn(CompletableFuture.completedFuture(null));
+
+        mockMvc.perform(post("/deal/calculate/{statementId}", statementId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(finishRegistrationRequestDto)))
                 .andExpect(status().isOk());
+
+        verify(kafkaTemplate, times(1)).send(eq("create-documents"), any(EmailMessage.class));
+    }
+
+    @Test
+    public void testSendDocuments() throws Exception {
+        UUID statementId = UUID.randomUUID();
+        when(dealService.sendDocuments(eq(statementId.toString()))).thenReturn(emailMessage);
+        when(kafkaTemplate.send(eq("send-documents"), any(EmailMessage.class)))
+                .thenReturn(CompletableFuture.completedFuture(null));
+
+        mockMvc.perform(post("/deal/document/{statementId}/send", statementId.toString()))
+                .andExpect(status().isOk());
+
+        verify(kafkaTemplate, times(1)).send(eq("send-documents"), any(EmailMessage.class));
+    }
+
+    @Test
+    public void testSignDocuments() throws Exception {
+        UUID statementId = UUID.randomUUID();
+        when(dealService.signDocuments(eq(statementId.toString()))).thenReturn(emailMessage);
+        when(kafkaTemplate.send(eq("send-ses"), any(EmailMessage.class)))
+                .thenReturn(CompletableFuture.completedFuture(null));
+
+        mockMvc.perform(post("/deal/document/{statementId}/sign", statementId.toString()))
+                .andExpect(status().isOk());
+
+        verify(kafkaTemplate, times(1)).send(eq("send-ses"), any(EmailMessage.class));
+    }
+
+    @Test
+    public void testCodeDocuments() throws Exception {
+        UUID statementId = UUID.randomUUID();
+        when(dealService.codeDocuments(eq(statementId.toString()))).thenReturn(emailMessage);
+        when(kafkaTemplate.send(eq("credit-issued"), any(EmailMessage.class)))
+                .thenReturn(CompletableFuture.completedFuture(null));
+
+        mockMvc.perform(post("/deal/document/{statementId}/code", statementId.toString()))
+                .andExpect(status().isOk());
+
+        verify(kafkaTemplate, times(1)).send(eq("credit-issued"), any(EmailMessage.class));
     }
 
     private String asJsonString(final Object obj) {
