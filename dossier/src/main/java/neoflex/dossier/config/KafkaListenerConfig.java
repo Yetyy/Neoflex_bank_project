@@ -28,7 +28,7 @@ public class KafkaListenerConfig {
      *
      * @param emailMessage сообщение email
      */
-    @KafkaListener(topics = {"finish-registration", "create-documents", "send-documents", "send-ses", "credit-issued", "statement-denied", "sign-documents", "code-documents"}, groupId = "dossier-group")
+    @KafkaListener(topics = {"finish-registration", "create-documents", "send-documents", "send-ses", "credit-issued", "statement-denied"}, groupId = "dossier-group")
     public void listen(EmailMessage emailMessage) {
         logger.info("Получено сообщение: {}", emailMessage);
 
@@ -36,7 +36,7 @@ public class KafkaListenerConfig {
             processEmailMessage(emailMessage);
         } catch (Exception e) {
             logger.error("Ошибка при обработке сообщения: {}", emailMessage, e);
-            // Отправка сообщения в DLT
+
         }
     }
 
@@ -51,26 +51,26 @@ public class KafkaListenerConfig {
                 emailService.sendFinishRegistrationEmail(emailMessage);
                 break;
             case CREATE_DOCUMENTS:
-                emailService.sendCreateDocumentsEmail(emailMessage);
+                emailService.sendCreateDocumentsEmail(emailMessage);//Создание ПДФ 1
                 break;
             case SEND_DOCUMENTS:
-                emailService.sendDocumentsEmail(emailMessage);
+                emailService.sendDocumentsEmail(emailMessage);//Отправка ПДФ 2
                 break;
             case SEND_SES:
-                emailService.sendSesEmail(emailMessage);
+                emailService.sendSesEmail(emailMessage);//Отправляем SES 3
                 break;
             case CREDIT_ISSUED:
-                emailService.sendCreditIssuedEmail(emailMessage);
+                emailService.sendCreditIssuedEmail(emailMessage);//Всё сделано верно, кредит выдан, высылаем письмо 4
                 break;
             case STATEMENT_DENIED:
                 emailService.sendStatementDeniedEmail(emailMessage);
                 break;
-            case SIGN_DOCUMENTS:
-                emailService.sendSignDocumentsEmail(emailMessage);
-                break;
-            case CODE_DOCUMENTS:
-                emailService.sendCodeDocumentsEmail(emailMessage);
-                break;
+//            case SIGN_DOCUMENTS:// не нужен?
+//                emailService.sendSignDocumentsEmail(emailMessage);
+//                break;
+//            case CODE_DOCUMENTS:// не нужен?
+//                emailService.sendCodeDocumentsEmail(emailMessage);
+//                break;
             default:
                 logger.warn("Неизвестная тема письма: {}", emailMessage.getTheme());
                 throw new IllegalArgumentException("Неизвестная тема письма: " + emailMessage.getTheme());

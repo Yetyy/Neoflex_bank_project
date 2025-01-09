@@ -39,7 +39,7 @@ public class EmailService {
      * @param emailMessage сообщение email
      */
     public void sendCreateDocumentsEmail(EmailMessage emailMessage) {
-        sendEmail(emailMessage, "Созданы документы");
+        sendEmail(emailMessage, "Перейдите к оформлению документов");
     }
 
     /**
@@ -57,7 +57,7 @@ public class EmailService {
      * @param emailMessage сообщение email
      */
     public void sendSesEmail(EmailMessage emailMessage) {
-        sendEmail(emailMessage, "Отправлены документы на подписание");
+        sendEmail(emailMessage, "Отправлен SES код для проверки");
     }
 
     /**
@@ -78,23 +78,6 @@ public class EmailService {
         sendEmail(emailMessage, "Заявка отклонена");
     }
 
-    /**
-     * Отправляет письмо о необходимости подписать документы.
-     *
-     * @param emailMessage сообщение email
-     */
-    public void sendSignDocumentsEmail(EmailMessage emailMessage) {
-        sendEmail(emailMessage, "Необходимо подписать документы");
-    }
-
-    /**
-     * Отправляет письмо о необходимости подписать документы с кодом.
-     *
-     * @param emailMessage сообщение email
-     */
-    public void sendCodeDocumentsEmail(EmailMessage emailMessage) {
-        sendEmail(emailMessage, "Необходимо подписать документы с кодом");
-    }
 
     /**
      * Отправляет письмо с указанным текстом.

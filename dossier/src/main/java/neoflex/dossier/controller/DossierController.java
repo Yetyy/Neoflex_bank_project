@@ -46,7 +46,7 @@ public class DossierController {
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
             logger.warn("Неизвестная тема письма: {}", emailMessage.getTheme());
-            return ResponseEntity.badRequest().build(); // Возвращаем ResponseEntity<Void>
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             logger.error("Ошибка при отправке письма: {}", emailMessage, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -78,12 +78,12 @@ public class DossierController {
             case STATEMENT_DENIED:
                 emailService.sendStatementDeniedEmail(emailMessage);
                 break;
-            case SIGN_DOCUMENTS:
-                emailService.sendSignDocumentsEmail(emailMessage);
-                break;
-            case CODE_DOCUMENTS:
-                emailService.sendCodeDocumentsEmail(emailMessage);
-                break;
+//            case SIGN_DOCUMENTS:
+//                emailService.sendSignDocumentsEmail(emailMessage);
+//                break;
+//            case CODE_DOCUMENTS:
+//                emailService.sendCodeDocumentsEmail(emailMessage);
+//                break;
             default:
                 logger.warn("Неизвестная тема письма: {}", emailMessage.getTheme());
                 throw new IllegalArgumentException("Неизвестная тема письма: " + emailMessage.getTheme());

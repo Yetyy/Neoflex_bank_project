@@ -9,6 +9,5 @@ public enum Theme {
     SEND_SES,
     CREDIT_ISSUED,
     STATEMENT_DENIED,
-    SIGN_DOCUMENTS,
-    CODE_DOCUMENTS
+
 }

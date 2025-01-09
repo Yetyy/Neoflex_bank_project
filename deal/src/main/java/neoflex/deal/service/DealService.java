@@ -63,7 +63,6 @@ public class DealService {
         assignStatementIdToLoanOffers(loanOffers, statement.getStatementId());
 
         logger.info("Предложения по кредиту рассчитаны и связаны с заявкой: {}", loanOffers);
-
         return loanOffers;
     }
 
@@ -271,16 +270,25 @@ public class DealService {
         ScoringDataDto scoringData = ScoringDataMapper.toScoringDataDto(statement, request);
         logger.info("Создан запрос для МС Калькулятор: {}", scoringData);
 
-        CreditDto creditDto = sendScoringDataToCalculator(scoringData);
+        CreditDto creditDto;
+        try {
+            creditDto = sendScoringDataToCalculator(scoringData);
+        } catch (RuntimeException e) {
+            logger.error("Ошибка при получении данных кредита: {}", e.getMessage());
+            updateStatementStatus(statement, ApplicationStatus.CC_DENIED);
+            return new EmailMessage(statement.getStatementId(), Theme.STATEMENT_DENIED, statement.getClient().getEmail());
+        }
         List<PaymentScheduleElement> paymentScheduleElements = convertPaymentSchedule(creditDto.getPaymentSchedule());
 
         Credit credit = createAndSaveCredit(creditDto, paymentScheduleElements);
-        updateStatementStatus(statement, ApplicationStatus.DOCUMENT_CREATED);
+        updateStatementStatus(statement, ApplicationStatus.CC_APPROVED);
 
         logger.info("Статус заявки обновлен: {}", statement);
 
-        return new EmailMessage(statement.getStatementId(), Theme.FINISH_REGISTRATION, statement.getClient().getEmail());
+        return new EmailMessage(statement.getStatementId(), Theme.CREATE_DOCUMENTS, statement.getClient().getEmail());
     }
+
+
 
     /**
      * Отправляет данные для скоринга в микросервис Калькулятор.
@@ -357,11 +365,12 @@ public class DealService {
      * Отправляет документы для заявки с указанным идентификатором.
      *
      * @param statementId идентификатор заявки
-     * @return объект EmailMessage с информацией для отправки email
+     * @return объект Statement с информацией для отправки email
      */
     @Transactional
     public EmailMessage sendDocuments(String statementId) {
         Statement statement = getStatementById(UUID.fromString(statementId));
+        updateStatementStatus(statement, ApplicationStatus.PREPARE_DOCUMENTS);
         return new EmailMessage(statement.getStatementId(), Theme.SEND_DOCUMENTS, statement.getClient().getEmail());
     }
 
@@ -374,7 +383,7 @@ public class DealService {
     @Transactional
     public EmailMessage signDocuments(String statementId) {
         Statement statement = getStatementById(UUID.fromString(statementId));
-        return new EmailMessage(statement.getStatementId(), Theme.SIGN_DOCUMENTS, statement.getClient().getEmail());
+        return new EmailMessage(statement.getStatementId(), Theme.SEND_SES, statement.getClient().getEmail());
     }
 
     /**
@@ -386,6 +395,48 @@ public class DealService {
     @Transactional
     public EmailMessage codeDocuments(String statementId) {
         Statement statement = getStatementById(UUID.fromString(statementId));
-        return new EmailMessage(statement.getStatementId(), Theme.CODE_DOCUMENTS, statement.getClient().getEmail());
+        updateStatementStatus(statement, ApplicationStatus.DOCUMENT_SIGNED);
+        return new EmailMessage(statement.getStatementId(), Theme.CREDIT_ISSUED, statement.getClient().getEmail());
     }
+
+    /**
+     * Обрабатывает успешную отправку сообщения в Kafka для документов.
+     *
+     * @param statementId идентификатор заявки
+     */
+    public void handleKafkaDocumentSuccess(String statementId) {
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        updateStatementStatus(statement, ApplicationStatus.DOCUMENT_CREATED);
+    }
+
+    /**
+     * Обрабатывает ошибку при отправке сообщения в Kafka для документов.
+     *
+     * @param statementId идентификатор заявки
+     * @param ex          исключение
+     */
+    public void handleKafkaDocumentFailure(String statementId, Throwable ex) {
+        logger.error("Ошибка при отправке сообщения в Kafka для заявки с ID {}: {}", statementId, ex.getMessage());
+    }
+
+    /**
+     * Обрабатывает успешную отправку сообщения в Kafka для кредита.
+     *
+     * @param statementId идентификатор заявки
+     */
+    public void handleKafkaCreditSuccess(String statementId) {
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        updateStatementStatus(statement, ApplicationStatus.CREDIT_ISSUED);
+    }
+
+    /**
+     * Обрабатывает ошибку при отправке сообщения в Kafka для кредита.
+     *
+     * @param statementId идентификатор заявки
+     * @param ex          исключение
+     */
+    public void handleKafkaCreditFailure(String statementId, Throwable ex) {
+        logger.error("Ошибка при отправке сообщения в Kafka для заявки с ID {}: {}", statementId, ex.getMessage());
+    }
+
 }
