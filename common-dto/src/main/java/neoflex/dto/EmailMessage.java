@@ -19,6 +19,8 @@ public class EmailMessage {
     private Theme theme;
     private UUID statementId;
     private String text;
+    private byte[] pdfDocumentBytes;
+
 
     /**
      * Создает новое сообщение email с указанными параметрами.
@@ -44,5 +46,11 @@ public class EmailMessage {
         this.statementId = UUID.fromString(statementId);
         this.theme = theme;
         this.address = address;
+    }
+    public EmailMessage(UUID statementId, Theme theme, String address, byte[] pdfDocumentBytes) {
+        this.statementId = statementId;
+        this.theme = theme;
+        this.address = address;
+        this.pdfDocumentBytes = pdfDocumentBytes;
     }
 }

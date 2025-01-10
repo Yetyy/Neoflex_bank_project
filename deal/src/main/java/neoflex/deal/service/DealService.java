@@ -1,6 +1,9 @@
 package neoflex.deal.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -18,12 +21,18 @@ import neoflex.enums.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -41,6 +50,16 @@ public class DealService {
     private final WebClient webClient;
     private final Validator validator;
     private final ObjectMapper objectMapper;
+
+    private static Font getFont(float size, int style, BaseColor color) {
+        try {
+            BaseFont baseFont = BaseFont.createFont(new ClassPathResource("times.ttf").getURL().toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            return new Font(baseFont, size, style, color);
+        } catch (DocumentException | IOException e) {
+            logger.error("Ошибка при создании шрифта: {}", e.getMessage());
+            return FontFactory.getFont(FontFactory.HELVETICA, size, style, color);
+        }
+    }
 
     /**
      * Рассчитывает возможные условия кредита на основе данных заявки.
@@ -213,7 +232,6 @@ public class DealService {
         return new EmailMessage(statement.getStatementId(), Theme.FINISH_REGISTRATION, statement.getClient().getEmail());
     }
 
-
     /**
      * Получает заявку по ID.
      *
@@ -281,6 +299,7 @@ public class DealService {
         List<PaymentScheduleElement> paymentScheduleElements = convertPaymentSchedule(creditDto.getPaymentSchedule());
 
         Credit credit = createAndSaveCredit(creditDto, paymentScheduleElements);
+        statement.setCredit(credit);
         updateStatementStatus(statement, ApplicationStatus.CC_APPROVED);
 
         logger.info("Статус заявки обновлен: {}", statement);
@@ -288,6 +307,94 @@ public class DealService {
         return new EmailMessage(statement.getStatementId(), Theme.CREATE_DOCUMENTS, statement.getClient().getEmail());
     }
 
+    private byte[] generatePdfDocument(Statement statement) {
+        try {
+            Document document = new Document();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PdfWriter.getInstance(document, outputStream);
+
+            document.open();
+
+            Font boldFont = getFont(16, Font.BOLD, BaseColor.BLACK);
+            Font headerFont = getFont(12, Font.BOLD, BaseColor.BLACK);
+            Font regularFont = getFont(12, Font.NORMAL, BaseColor.BLACK);
+
+            // Информация о клиенте
+            Client client = statement.getClient();
+            String fullName = getFullName(client);
+            Passport passport = client.getPassport();
+
+            addParagraph(document, "Кредитный договор", boldFont);
+            addParagraph(document, " ", regularFont);
+            addParagraph(document, "Информация о клиенте:", headerFont);
+            addParagraph(document, "ФИО: " + fullName, regularFont);
+            addParagraph(document, "Дата рождения: " + client.getBirthDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")), regularFont);
+            addParagraph(document, "Email: " + client.getEmail(), regularFont);
+            addParagraph(document, "Паспортные данные:", headerFont);
+            addParagraph(document, "Серия: " + passport.getSeries(), regularFont);
+            addParagraph(document, "Номер: " + passport.getNumber(), regularFont);
+            if (passport.getIssueDate() != null) {
+                addParagraph(document, "Дата выдачи: " + passport.getIssueDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")), regularFont);
+            }
+            if (passport.getIssueBranch() != null) {
+                addParagraph(document, "Кем выдан: " + passport.getIssueBranch(), regularFont);
+            }
+            addParagraph(document, " ", regularFont);
+
+            // Информация о кредите
+            Credit credit = statement.getCredit();
+            addParagraph(document, "Информация о кредите:", headerFont);
+            addParagraph(document, "Сумма кредита: " + credit.getAmount(), regularFont);
+            addParagraph(document, "Срок кредита: " + credit.getTerm() + " месяцев", regularFont);
+            addParagraph(document, "Ежемесячный платеж: " + credit.getMonthlyPayment(), regularFont);
+            BigDecimal rate = statement.getCredit().getRate();
+            BigDecimal ratePercentage = rate.multiply(new BigDecimal(100));
+            addParagraph(document, "Процентная ставка: " + ratePercentage + "%", regularFont);
+            addParagraph(document, "ПСК: " + credit.getPsk(), regularFont);
+            addParagraph(document, " ", regularFont);
+
+            // График платежей
+            List<PaymentScheduleElement> paymentSchedule = SerializationUtil.deserializePaymentSchedule(credit.getPaymentSchedule(), objectMapper);
+            if (paymentSchedule != null && !paymentSchedule.isEmpty()) {
+                addParagraph(document, "График платежей:", headerFont);
+                for (PaymentScheduleElement payment : paymentSchedule) {
+                    addParagraph(document, "Номер платежа: " + payment.getNumber() +
+                            ", Дата: " + payment.getDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) +
+                            ", Сумма: " + payment.getTotalPayment() +
+                            ", Погашение процентов: " + payment.getInterestPayment() +
+                            ", Погашение основного долга: " + payment.getDebtPayment() +
+                            ", Остаток долга: " + payment.getRemainingDebt(), regularFont);
+                }
+            } else {
+                addParagraph(document, "График платежей отсутствует.", regularFont);
+            }
+            addParagraph(document, " ", regularFont);
+
+            // Дата создания заявки
+            LocalDate currentDate = LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String formattedDate = currentDate.format(formatter);
+            addParagraph(document, "Дата создания заявки: " + formattedDate, regularFont);
+
+            document.close();
+
+            return outputStream.toByteArray();
+        } catch (DocumentException e) {
+            logger.error("Ошибка при создании PDF документа: {}", e.getMessage());
+            throw new RuntimeException("Ошибка при создании PDF документа", e);
+        }
+    }
+
+
+
+    private void addParagraph(Document document, String text, Font font) throws DocumentException {
+        Paragraph paragraph = new Paragraph(text, font);
+        document.add(paragraph);
+    }
+
+    private String getFullName(Client client) {
+        return client.getMiddleName() + " " + client.getFirstName()  + " " + client.getLastName();
+    }
 
 
     /**
@@ -320,7 +427,7 @@ public class DealService {
      * @return список элементов графика платежей в формате сущностей
      */
     private List<PaymentScheduleElement> convertPaymentSchedule(List<PaymentScheduleElementDto> paymentSchedule) {
-        List<PaymentScheduleElement> paymentScheduleElements = PaymentScheduleElementMapper.INSTANCE.toEntities(paymentSchedule);
+        List<PaymentScheduleElement> paymentScheduleElements = PaymentScheduleElementMapper.toEntities(paymentSchedule);
         logger.info("Преобразованы элементы графика платежей: {}", paymentScheduleElements);
         return paymentScheduleElements;
     }
@@ -361,6 +468,7 @@ public class DealService {
         statement.setStatus(status);
         statementRepository.save(statement);
     }
+
     /**
      * Отправляет документы для заявки с указанным идентификатором.
      *
@@ -371,7 +479,8 @@ public class DealService {
     public EmailMessage sendDocuments(String statementId) {
         Statement statement = getStatementById(UUID.fromString(statementId));
         updateStatementStatus(statement, ApplicationStatus.PREPARE_DOCUMENTS);
-        return new EmailMessage(statement.getStatementId(), Theme.SEND_DOCUMENTS, statement.getClient().getEmail());
+        byte[] pdfBytes = generatePdfDocument(statement);
+        return new EmailMessage(statement.getStatementId(), Theme.SEND_DOCUMENTS, statement.getClient().getEmail(), pdfBytes);
     }
 
     /**

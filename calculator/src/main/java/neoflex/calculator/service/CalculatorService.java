@@ -257,14 +257,20 @@ public class CalculatorService {
         BigDecimal remainingPrincipal = loanAmount;
         BigDecimal monthlyPayment = calculateAnnuityMonthlyPayment(loanAmount, rate, term);
 
+        // Получаем текущую дату
+        LocalDate currentDate = LocalDate.now();
+
         for (int i = 0; i < term; i++) {
-            BigDecimal interestPayment = remainingPrincipal.multiply(monthlyRate);
-            BigDecimal principalPayment = monthlyPayment.subtract(interestPayment);
-            remainingPrincipal = remainingPrincipal.subtract(principalPayment);
+            // Прибавляем i месяцев к текущей дате
+            LocalDate paymentDate = currentDate.plusMonths(i + 1);
+
+            BigDecimal interestPayment = remainingPrincipal.multiply(monthlyRate).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal principalPayment = monthlyPayment.subtract(interestPayment).setScale(2, RoundingMode.HALF_UP);
+            remainingPrincipal = remainingPrincipal.subtract(principalPayment).setScale(2, RoundingMode.HALF_UP);
 
             PaymentScheduleElementDto element = PaymentScheduleElementDto.builder()
                     .number(i + 1)
-                    .date(LocalDate.now().plusMonths(i))
+                    .date(paymentDate)
                     .totalPayment(monthlyPayment)
                     .interestPayment(interestPayment)
                     .debtPayment(principalPayment)
@@ -277,4 +283,5 @@ public class CalculatorService {
         logger.debug("Рассчитан график аннуитетных платежей: {}", paymentSchedule);
         return paymentSchedule;
     }
+
 }

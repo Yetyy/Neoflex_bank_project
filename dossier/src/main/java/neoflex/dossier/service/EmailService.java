@@ -7,7 +7,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.activation.DataSource;
+import jakarta.mail.util.ByteArrayDataSource;
+
+import java.util.Base64;
 
 /**
  * Сервис для отправки email.
@@ -48,7 +56,7 @@ public class EmailService {
      * @param emailMessage сообщение email
      */
     public void sendDocumentsEmail(EmailMessage emailMessage) {
-        sendEmail(emailMessage, "Отправлены документы");
+        sendEmailWithAttachment(emailMessage, "Отправлены документы");
     }
 
     /**
@@ -98,6 +106,27 @@ public class EmailService {
             logger.info("Письмо отправлено: {}", emailMessage);
         } catch (Exception e) {
             logger.error("Ошибка при отправке письма: {}", emailMessage, e);
+        }
+    }
+    private void sendEmailWithAttachment(EmailMessage emailMessage, String text) {
+        logger.info("Подготавливаем письмо с вложением: {}", emailMessage);
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setFrom("bank_dossier@mail.ru");
+            helper.setTo(emailMessage.getAddress());
+            helper.setSubject(emailMessage.getTheme().toString());
+            helper.setText(text);
+
+            if (emailMessage.getPdfDocumentBytes() != null) {
+                DataSource dataSource = new ByteArrayDataSource(emailMessage.getPdfDocumentBytes(), "application/pdf");
+                helper.addAttachment("credit_agreement.pdf", dataSource);
+            }
+
+            mailSender.send(mimeMessage);
+            logger.info("Письмо с вложением отправлено: {}", emailMessage);
+        } catch (MessagingException e) {
+            logger.error("Ошибка при отправке письма с вложением: {}", emailMessage, e);
         }
     }
 }

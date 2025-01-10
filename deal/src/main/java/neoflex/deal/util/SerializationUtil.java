@@ -69,10 +69,14 @@ public class SerializationUtil {
      */
     public static List<PaymentScheduleElement> deserializePaymentSchedule(String paymentScheduleJson, ObjectMapper objectMapper) {
         try {
-            return objectMapper.readValue(paymentScheduleJson, new TypeReference<List<PaymentScheduleElement>>(){});
+            logger.info("JSON для десериализации: {}", paymentScheduleJson); // Логируем JSON
+            List<PaymentScheduleElement> result = objectMapper.readValue(paymentScheduleJson, new TypeReference<List<PaymentScheduleElement>>(){});
+            logger.info("Результат десериализации: {}", result); // Логируем результат
+            return result;
         } catch (IOException e) {
             logger.error("Ошибка при десериализации графика платежей: {}", e.getMessage());
             throw new RuntimeException("Ошибка при десериализации графика платежей", e);
         }
     }
+
 }
