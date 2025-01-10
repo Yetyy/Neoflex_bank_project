@@ -65,7 +65,7 @@ public class EmailService {
      * @param emailMessage сообщение email
      */
     public void sendSesEmail(EmailMessage emailMessage) {
-        sendEmail(emailMessage, "Отправлен SES код для проверки");
+        sendEmail(emailMessage, emailMessage.getText());
     }
 
     /**
@@ -85,7 +85,6 @@ public class EmailService {
     public void sendStatementDeniedEmail(EmailMessage emailMessage) {
         sendEmail(emailMessage, "Заявка отклонена");
     }
-
 
     /**
      * Отправляет письмо с указанным текстом.

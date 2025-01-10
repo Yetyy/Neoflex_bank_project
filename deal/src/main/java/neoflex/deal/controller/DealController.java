@@ -99,7 +99,6 @@ public class DealController {
         kafkaTemplate.send("create-documents", emailMessage);
     }
 
-
     /**
      * Обрабатывает запрос на отправку документов.
      *
@@ -147,7 +146,6 @@ public class DealController {
                     content = @Content(mediaType = "application/json"))
     })
     public void signDocuments(@PathVariable String statementId) {
-        //Создать SES код и записать его в Statement
         logger.info("Получен запрос на подписание документов для заявки с ID: {}", statementId);
         EmailMessage emailMessage = dealService.signDocuments(statementId);
         kafkaTemplate.send("send-ses", emailMessage);
@@ -157,6 +155,7 @@ public class DealController {
      * Обрабатывает запрос на подписание документов с кодом.
      *
      * @param statementId идентификатор заявки
+     * @param sesCode     код подтверждения
      */
     @PostMapping("/document/{statementId}/code")
     @Operation(summary = "Проверка полученного кода", description = "Проверяет соответствие присланного кода и завершает оформление")
@@ -165,11 +164,10 @@ public class DealController {
             @ApiResponse(responseCode = "400", description = "Неверный ввод",
                     content = @Content(mediaType = "application/json"))
     })
-    public ResponseEntity<Void> codeDocuments(@PathVariable String statementId) {
-        logger.info("Получен запрос на подписание документов с кодом для заявки с ID: {}", statementId);
+    public ResponseEntity<Void> codeDocuments(@PathVariable String statementId, @RequestBody String sesCode) {
+        logger.info("Получен запрос на подписание документов с кодом для заявки с ID: {}, код: {}", statementId, sesCode);
         try {
-
-            EmailMessage emailMessage = dealService.codeDocuments(statementId);
+            EmailMessage emailMessage = dealService.codeDocuments(statementId, sesCode);
 
             CompletableFuture<SendResult<String, EmailMessage>> future = kafkaTemplate.send("credit-issued", emailMessage);
             future.whenComplete((result, ex) -> {
@@ -181,9 +179,12 @@ public class DealController {
             });
 
             return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            logger.error("Ошибка при обработке запроса на подписание документов: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
             logger.error("Ошибка при обработке запроса на подписание документов: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

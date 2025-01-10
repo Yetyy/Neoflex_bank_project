@@ -16,8 +16,10 @@ import neoflex.enums.CreditStatus;
 import neoflex.deal.mapper.PaymentScheduleElementMapper;
 import neoflex.deal.mapper.ScoringDataMapper;
 import neoflex.deal.repository.*;
+import neoflex.deal.util.SesCodeGenerator;
 import neoflex.deal.util.SerializationUtil;
 import neoflex.enums.Theme;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -396,7 +398,6 @@ public class DealService {
         return client.getMiddleName() + " " + client.getFirstName()  + " " + client.getLastName();
     }
 
-
     /**
      * Отправляет данные для скоринга в микросервис Калькулятор.
      *
@@ -491,19 +492,38 @@ public class DealService {
      */
     @Transactional
     public EmailMessage signDocuments(String statementId) {
+        logger.info("Подписание документов для заявки с ID: {}", statementId);
         Statement statement = getStatementById(UUID.fromString(statementId));
-        return new EmailMessage(statement.getStatementId(), Theme.SEND_SES, statement.getClient().getEmail());
+
+        String sesCode = SesCodeGenerator.generateSesCode();
+        logger.debug("Сгенерирован SES код: {} для заявки с ID: {}", sesCode, statementId);
+
+        statement.setSesCode(sesCode);
+        statementRepository.save(statement);
+        logger.info("SES код сохранен в заявке с ID: {}", statementId);
+
+        EmailMessage emailMessage = new EmailMessage(statement.getStatementId(), Theme.SEND_SES, statement.getClient().getEmail());
+        emailMessage.setText("Потвердите согласие на оформление кредита с помощью кода: " + sesCode);
+        return emailMessage;
     }
 
     /**
      * Кодирует документы для заявки с указанным идентификатором.
      *
      * @param statementId идентификатор заявки
+     * @param sesCode     код подтверждения
      * @return объект EmailMessage с информацией для отправки email
      */
     @Transactional
-    public EmailMessage codeDocuments(String statementId) {
+    public EmailMessage codeDocuments(String statementId, String sesCode) {
+        logger.info("Проверка SES кода для заявки с ID: {}", statementId);
         Statement statement = getStatementById(UUID.fromString(statementId));
+        if (!StringUtils.equals(statement.getSesCode(), sesCode)) {
+            logger.error("Неверный SES код для заявки с ID: {}", statementId);
+            throw new IllegalArgumentException("Неверный SES код");
+        }
+
+        logger.info("SES код верный, заявка с ID: {} подтверждена", statementId);
         updateStatementStatus(statement, ApplicationStatus.DOCUMENT_SIGNED);
         return new EmailMessage(statement.getStatementId(), Theme.CREDIT_ISSUED, statement.getClient().getEmail());
     }
