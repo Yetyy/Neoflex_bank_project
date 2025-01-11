@@ -3,10 +3,6 @@ package neoflex.dossier.controller;
 import lombok.RequiredArgsConstructor;
 import neoflex.dossier.service.EmailService;
 import neoflex.dto.EmailMessage;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,12 +27,6 @@ public class DossierController {
      * @return ответ с результатом операции
      */
     @PostMapping("/send-email")
-    @Operation(summary = "Отправка письма", description = "Отправляет письмо клиенту")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешная операция"),
-            @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                    content = @Content(mediaType = "application/json"))
-    })
     public ResponseEntity<Void> sendEmail(@RequestBody EmailMessage emailMessage) {
         logger.info("Отправка письма: {}", emailMessage);
 

@@ -15,11 +15,6 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,14 +43,6 @@ public class DealController {
      * @return список предложений по кредиту
      */
     @PostMapping("/statement")
-    @Operation(summary = "Расчет возможных условий кредита", description = "Рассчитывает возможные условия кредита на основе предоставленного запроса")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешная операция",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LoanOfferDto.class))),
-            @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                    content = @Content(mediaType = "application/json"))
-    })
     public List<LoanOfferDto> calculateLoanOffers(@RequestBody LoanStatementRequestDto request) {
         logger.info("Получен запрос на расчет возможных условий кредита: {}", request);
         return dealService.calculateLoanOffers(request);
@@ -67,12 +54,6 @@ public class DealController {
      * @param offer объект с данными выбранного предложения
      */
     @PostMapping("/offer/select")
-    @Operation(summary = "Выбор предложения по кредиту", description = "Выбирает одно из предложений по кредиту на основе предоставленного запроса")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешная операция"),
-            @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                    content = @Content(mediaType = "application/json"))
-    })
     public void selectLoanOffer(@RequestBody LoanOfferDto offer) {
         logger.info("Получен запрос на выбор предложения по кредиту: {}", offer);
         EmailMessage emailMessage = dealService.selectLoanOffer(offer);
@@ -86,12 +67,6 @@ public class DealController {
      * @param request объект с данными для завершения регистрации
      */
     @PostMapping("/calculate/{statementId}")
-    @Operation(summary = "Завершение регистрации и полный подсчет кредита", description = "Завершает регистрацию и выполняет полный подсчет кредита на основе предоставленного запроса")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешная операция"),
-            @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                    content = @Content(mediaType = "application/json"))
-    })
     public void finishRegistration(@PathVariable String statementId, @RequestBody FinishRegistrationRequestDto request) {
         logger.info("Получен запрос на завершение регистрации и полный подсчет кредита для заявки с ID: {}", statementId);
         logger.info("Данные запроса: {}", request);
@@ -105,12 +80,6 @@ public class DealController {
      * @param statementId идентификатор заявки
      */
     @PostMapping("/document/{statementId}/send")
-    @Operation(summary = "Отправка документов", description = "Отправляет документы для заявки с указанным идентификатором")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешная операция"),
-            @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                    content = @Content(mediaType = "application/json"))
-    })
     public ResponseEntity<Void> sendDocuments(@PathVariable String statementId) {
         logger.info("Получен запрос на отправку документов для заявки с ID: {}", statementId);
         try {
@@ -139,12 +108,6 @@ public class DealController {
      * @param statementId идентификатор заявки
      */
     @PostMapping("/document/{statementId}/sign")
-    @Operation(summary = "Подписание документов", description = "Подписывает документы для заявки с указанным идентификатором")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешная операция"),
-            @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                    content = @Content(mediaType = "application/json"))
-    })
     public void signDocuments(@PathVariable String statementId) {
         logger.info("Получен запрос на подписание документов для заявки с ID: {}", statementId);
         EmailMessage emailMessage = dealService.signDocuments(statementId);
@@ -158,12 +121,6 @@ public class DealController {
      * @param sesCode     код подтверждения
      */
     @PostMapping("/document/{statementId}/code")
-    @Operation(summary = "Проверка полученного кода", description = "Проверяет соответствие присланного кода и завершает оформление")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешная операция"),
-            @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                    content = @Content(mediaType = "application/json"))
-    })
     public ResponseEntity<Void> codeDocuments(@PathVariable String statementId, @RequestBody String sesCode) {
         logger.info("Получен запрос на подписание документов с кодом для заявки с ID: {}, код: {}", statementId, sesCode);
         try {

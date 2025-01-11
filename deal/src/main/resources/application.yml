@@ -1,4 +1,8 @@
+server:
+  port: 8081
 spring:
+  application:
+    name: deal
   datasource:
     url: jdbc:postgresql://postgres:5432/deal
     username: postgres
@@ -22,17 +26,15 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
-server:
-  port: 8081
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operationsSorter: method
-    tagsSorter: alpha
-
+  springdoc:
+    swagger-ui:
+      url: /swagger.yml
+      config-url: /swagger.yml
+      path: /swagger-ui.html
+      operationsSorter: method
+      tagsSorter: alpha
+    api-docs:
+      path: /api-docs
 logging:
   level:
     root: info
@@ -42,7 +44,6 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
 management:
   endpoints:
     web:
@@ -50,8 +51,5 @@ management:
         include: "*"
   health:
     enabled: true
-
 calculator:
   url: http://calculator:8082/calculator
-
-
