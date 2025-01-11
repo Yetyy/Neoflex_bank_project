@@ -4,9 +4,9 @@ spring:
   application:
     name: deal
   datasource:
-    url: jdbc:postgresql://postgres:5432/deal
-    username: postgres
-    password: postgres
+    url: ${DATABASE_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   liquibase:
     enabled: true
@@ -52,4 +52,4 @@ management:
   health:
     enabled: true
 calculator:
-  url: http://calculator:8082/calculator
+  url: ${CALCULATOR_URL}

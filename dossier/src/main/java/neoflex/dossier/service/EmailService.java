@@ -5,6 +5,7 @@ import neoflex.enums.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -26,6 +27,8 @@ public class EmailService {
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender mailSender;
+    @Value("${mail.from}")
+    private String mailFrom;
 
     @Autowired
     public EmailService(JavaMailSender mailSender) {
@@ -95,7 +98,7 @@ public class EmailService {
     private void sendEmail(EmailMessage emailMessage, String text) {
         logger.info("Подготавливаем письмо: {}", emailMessage);
         SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom("bank_dossier@mail.ru");
+        mailMessage.setFrom(mailFrom);
         mailMessage.setTo(emailMessage.getAddress());
         mailMessage.setSubject(emailMessage.getTheme().toString());
         mailMessage.setText(text);
@@ -112,7 +115,7 @@ public class EmailService {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            helper.setFrom("bank_dossier@mail.ru");
+            helper.setFrom(mailFrom);
             helper.setTo(emailMessage.getAddress());
             helper.setSubject(emailMessage.getTheme().toString());
             helper.setText(text);

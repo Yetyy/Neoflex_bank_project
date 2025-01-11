@@ -395,7 +395,7 @@ public class DealService {
     }
 
     private String getFullName(Client client) {
-        return client.getMiddleName() + " " + client.getFirstName()  + " " + client.getLastName();
+        return client.getLastName() + " " + client.getFirstName()  + " " + client.getMiddleName();
     }
 
     /**

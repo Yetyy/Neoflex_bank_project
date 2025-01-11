@@ -1,6 +1,3 @@
-/**
- * Пакет сервисов для калькулятора кредитных предложений.
- */
 package neoflex.calculator.service;
 
 import lombok.Getter;
