@@ -31,6 +31,13 @@
         <logback.version>1.4.11</logback.version>
         <com.itextpdf.version>5.5.13.2</com.itextpdf.version>
         <jboss-logging.version>3.5.3.Final</jboss-logging.version>
+        <jboss-logging-processor.version>2.2.1.Final</jboss-logging-processor.version>
+        <jetbrains.annotations.version>23.0.0</jetbrains.annotations.version>
+        <commons.text.version>1.11.0</commons.text.version>
+        <javax.annotation.version>1.3.2</javax.annotation.version>
+        <jakarta.mail-api.version>2.1.3</jakarta.mail-api.version>
+        <com.sun.mail.version>2.0.1</com.sun.mail.version>
+        <jackson.dataformat.yaml.version>2.13.3</jackson.dataformat.yaml.version>
     </properties>
 
     <dependencyManagement>
@@ -110,41 +117,42 @@
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-processor</artifactId>
-                <version>2.2.1.Final</version>
+                <version>${jboss-logging-processor.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-annotations</artifactId>
-                <version>2.2.1.Final</version>
+                <version>${jboss-logging.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
-                <version>23.0.0</version>
+                <version>${jetbrains.annotations.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
-                <version>1.11.0</version>
+                <version>${commons.text.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.annotation</groupId>
                 <artifactId>javax.annotation-api</artifactId>
-                <version>1.3.2</version>
+                <version>${javax.annotation.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.mail</groupId>
                 <artifactId>jakarta.mail-api</artifactId>
-                <version>2.1.3</version>
+                <version>${jakarta.mail-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.mail</groupId>
                 <artifactId>jakarta.mail</artifactId>
-                <version>2.0.1</version>
+                <version>${com.sun.mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${jackson.dataformat.yaml.version}</version>
             </dependency>
 
         </dependencies>

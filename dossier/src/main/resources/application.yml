@@ -23,13 +23,13 @@ spring:
     port: ${MAIL_PORT}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
-    protocol: smtps
+    protocol: ${MAIL_PROTOCOL}
     properties:
       mail:
         smtp:
-          auth: true
+          auth: ${MAIL_SMTP_AUTH}
           ssl:
-            enable: true
+            enable: ${MAIL_SMTP_SSL_ENABLE}
 logging:
   level:
     root: INFO

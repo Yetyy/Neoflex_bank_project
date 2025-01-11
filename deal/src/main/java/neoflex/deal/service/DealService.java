@@ -309,6 +309,13 @@ public class DealService {
         return new EmailMessage(statement.getStatementId(), Theme.CREATE_DOCUMENTS, statement.getClient().getEmail());
     }
 
+    /**
+     * Генерирует PDF документ на основе информации из объекта Statement.
+     *
+     * @param statement объект Statement, содержащий информацию о клиенте и кредите
+     * @return массив байтов, представляющий сгенерированный PDF документ
+     * @throws RuntimeException если происходит ошибка при создании PDF документа
+     */
     private byte[] generatePdfDocument(Statement statement) {
         try {
             Document document = new Document();

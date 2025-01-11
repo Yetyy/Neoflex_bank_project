@@ -8,6 +8,9 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.util.Properties;
 
+/**
+ * Конфигурационный класс для настройки JavaMailSender.
+ */
 @Configuration
 public class MailConfig {
 
@@ -32,6 +35,11 @@ public class MailConfig {
     @Value("${mail.smtp.ssl.enable}")
     private boolean smtpSslEnable;
 
+    /**
+     * Создает и настраивает JavaMailSender для отправки электронной почты.
+     *
+     * @return настроенный экземпляр JavaMailSender
+     */
     @Bean
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();

@@ -16,7 +16,6 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.activation.DataSource;
 import jakarta.mail.util.ByteArrayDataSource;
 
-import java.util.Base64;
 
 /**
  * Сервис для отправки email.
