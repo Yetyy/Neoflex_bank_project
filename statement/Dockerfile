@@ -3,7 +3,7 @@ FROM maven:3.9.5-eclipse-temurin-21 AS builder
 WORKDIR /app
 
 COPY ../pom.xml .
-COPY ../common-dto ./common-dto
+COPY ../common-lib ./common-dto
 COPY . .
 
 RUN mvn clean install -DskipTests

@@ -8,9 +8,7 @@ import neoflex.enums.Gender;
 import neoflex.enums.MaritalStatus;
 
 import java.time.LocalDate;
-
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

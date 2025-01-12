@@ -9,7 +9,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>neoflex</groupId>
-    <artifactId>common-dto</artifactId>
+    <artifactId>common-lib</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
     <name>Common DTO Library</name>

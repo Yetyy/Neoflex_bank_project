@@ -155,6 +155,7 @@ public class DealService {
                 .client(client)
                 .status(ApplicationStatus.PREAPPROVAL)
                 .statusHistory(List.of())
+                .creationDate(LocalDateTime.now())
                 .build();
         statementRepository.save(statement);
         logger.info("Заявка сохранена: {}", statement);
@@ -467,17 +468,6 @@ public class DealService {
     }
 
     /**
-     * Обновляет статус заявки.
-     *
-     * @param statement заявка
-     * @param status    новый статус
-     */
-    private void updateStatementStatus(Statement statement, ApplicationStatus status) {
-        statement.setStatus(status);
-        statementRepository.save(statement);
-    }
-
-    /**
      * Отправляет документы для заявки с указанным идентификатором.
      *
      * @param statementId идентификатор заявки
@@ -506,6 +496,7 @@ public class DealService {
         logger.debug("Сгенерирован SES код: {} для заявки с ID: {}", sesCode, statementId);
 
         statement.setSesCode(sesCode);
+        statement.setSignDate(LocalDateTime.now());
         statementRepository.save(statement);
         logger.info("SES код сохранен в заявке с ID: {}", statementId);
 
@@ -563,6 +554,8 @@ public class DealService {
     public void handleKafkaCreditSuccess(String statementId) {
         Statement statement = getStatementById(UUID.fromString(statementId));
         updateStatementStatus(statement, ApplicationStatus.CREDIT_ISSUED);
+        Credit credit = statement.getCredit();
+        updateCreditStatus(credit, CreditStatus.ISSUED);
     }
 
     /**
@@ -575,4 +568,26 @@ public class DealService {
         logger.error("Ошибка при отправке сообщения в Kafka для заявки с ID {}: {}", statementId, ex.getMessage());
     }
 
+
+    /**
+     * Обновляет статус заявки.
+     *
+     * @param statement заявка
+     * @param status    новый статус
+     */
+    private void updateStatementStatus(Statement statement, ApplicationStatus status) {
+        statement.setStatus(status);
+        statementRepository.save(statement);
+    }
+
+    /**
+     * Обновляет статус кредита.
+     *
+     * @param credit       кредит для обновления
+     * @param creditStatus новый статус кредита
+     */
+    private void updateCreditStatus(Credit credit, CreditStatus creditStatus) {
+        credit.setCreditStatus(creditStatus);
+        creditRepository.save(credit);
+    }
 }

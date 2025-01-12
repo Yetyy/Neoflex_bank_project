@@ -30,7 +30,7 @@ public class KafkaListenerConfig {
      */
     @KafkaListener(topics = {"finish-registration", "create-documents", "send-documents", "send-ses", "credit-issued", "statement-denied"}, groupId = "dossier-group")
     public void listen(EmailMessage emailMessage) {
-        logger.info("Получено сообщение: {}", emailMessage);
+        logger.info("Получено сообщение");
 
         try {
             processEmailMessage(emailMessage);

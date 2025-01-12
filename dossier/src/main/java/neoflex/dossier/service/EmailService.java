@@ -95,7 +95,7 @@ public class EmailService {
      * @param text         текст письма
      */
     private void sendEmail(EmailMessage emailMessage, String text) {
-        logger.info("Подготавливаем письмо: {}", emailMessage);
+        logger.info("Подготавливаем письмо");
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setFrom(mailFrom);
         mailMessage.setTo(emailMessage.getAddress());
@@ -104,13 +104,13 @@ public class EmailService {
 
         try {
             mailSender.send(mailMessage);
-            logger.info("Письмо отправлено: {}", emailMessage);
+            logger.info("Письмо отправлено");
         } catch (Exception e) {
             logger.error("Ошибка при отправке письма: {}", emailMessage, e);
         }
     }
     private void sendEmailWithAttachment(EmailMessage emailMessage, String text) {
-        logger.info("Подготавливаем письмо с вложением: {}", emailMessage);
+        logger.info("Подготавливаем письмо с вложением");
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -125,7 +125,7 @@ public class EmailService {
             }
 
             mailSender.send(mimeMessage);
-            logger.info("Письмо с вложением отправлено: {}", emailMessage);
+            logger.info("Письмо с вложением отправлено");
         } catch (MessagingException e) {
             logger.error("Ошибка при отправке письма с вложением: {}", emailMessage, e);
         }

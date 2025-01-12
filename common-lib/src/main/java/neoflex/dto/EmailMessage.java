@@ -8,9 +8,8 @@ import java.util.UUID;
 /**
  * DTO для представления сообщения email.
  */
-@Getter
-@Setter
 @Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmailMessage {

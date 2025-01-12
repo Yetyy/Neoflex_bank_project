@@ -137,7 +137,7 @@ public class DealController {
 
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
-            logger.error("Ошибка при обработке запроса на подписание документов: {}", e.getMessage());
+            logger.error("Ошибка при обработке запроса на подписание документов: Некорректные данные: {}", e.getMessage());
             return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
             logger.error("Ошибка при обработке запроса на подписание документов: {}", e.getMessage());

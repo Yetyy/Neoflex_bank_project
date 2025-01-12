@@ -193,6 +193,9 @@ public class CalculatorService {
                 case DIVORCED:
                     rate = rate.add(BigDecimal.valueOf(0.01));
                     break;
+                case WIDOW_WIDOWER:
+                    rate = rate.add(BigDecimal.valueOf(0.02));
+                    break;
                 default:
                     break;
             }

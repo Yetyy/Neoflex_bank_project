@@ -8,9 +8,7 @@ import neoflex.enums.EmploymentStatus;
 import neoflex.enums.EmploymentPosition;
 
 import java.math.BigDecimal;
-
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
