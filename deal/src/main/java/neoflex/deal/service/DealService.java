@@ -1,6 +1,9 @@
 package neoflex.deal.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -13,16 +16,25 @@ import neoflex.enums.CreditStatus;
 import neoflex.deal.mapper.PaymentScheduleElementMapper;
 import neoflex.deal.mapper.ScoringDataMapper;
 import neoflex.deal.repository.*;
+import neoflex.deal.util.SesCodeGenerator;
 import neoflex.deal.util.SerializationUtil;
+import neoflex.enums.Theme;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -41,12 +53,23 @@ public class DealService {
     private final Validator validator;
     private final ObjectMapper objectMapper;
 
+    private static Font getFont(float size, int style, BaseColor color) {
+        try {
+            BaseFont baseFont = BaseFont.createFont(new ClassPathResource("times.ttf").getURL().toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            return new Font(baseFont, size, style, color);
+        } catch (DocumentException | IOException e) {
+            logger.error("Ошибка при создании шрифта: {}", e.getMessage());
+            return FontFactory.getFont(FontFactory.HELVETICA, size, style, color);
+        }
+    }
+
     /**
      * Рассчитывает возможные условия кредита на основе данных заявки.
      *
      * @param request объект с данными заявки на кредит
      * @return список предложений по кредиту
      */
+    @Transactional
     public List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto request) {
         logger.info("Получен запрос на расчет возможных условий кредита: {}", request);
 
@@ -61,7 +84,6 @@ public class DealService {
         assignStatementIdToLoanOffers(loanOffers, statement.getStatementId());
 
         logger.info("Предложения по кредиту рассчитаны и связаны с заявкой: {}", loanOffers);
-
         return loanOffers;
     }
 
@@ -133,6 +155,7 @@ public class DealService {
                 .client(client)
                 .status(ApplicationStatus.PREAPPROVAL)
                 .statusHistory(List.of())
+                .creationDate(LocalDateTime.now())
                 .build();
         statementRepository.save(statement);
         logger.info("Заявка сохранена: {}", statement);
@@ -180,16 +203,14 @@ public class DealService {
      * @param offer объект с данными выбранного кредитного предложения
      */
     @Transactional
-    public void selectLoanOffer(LoanOfferDto offer) {
+    public EmailMessage selectLoanOffer(LoanOfferDto offer) {
         logger.info("Выбор кредитного предложения: {}", offer);
 
         Statement statement = getStatementById(offer.getStatementId());
         String appliedOfferJson = SerializationUtil.serializeLoanOffer(offer, objectMapper);
 
-        // Десериализация appliedOfferJson в LoanOfferDto
         LoanOfferDto appliedOfferDto = SerializationUtil.deserializeLoanOffer(appliedOfferJson, objectMapper);
 
-        // Обновление поля кредита в заявке информацией из appliedOfferDto
         Credit credit = statement.getCredit();
         if (credit == null) {
             credit = new Credit();
@@ -201,7 +222,6 @@ public class DealService {
         credit.setInsuranceEnabled(appliedOfferDto.isInsuranceEnabled());
         credit.setSalaryClient(appliedOfferDto.isSalaryClient());
 
-        // Сохранение сущности кредита
         credit = creditRepository.save(credit);
 
         statement.setCredit(credit);
@@ -211,6 +231,8 @@ public class DealService {
 
         statementRepository.save(statement);
         logger.info("Кредитное предложение успешно выбрано: {}", statement);
+
+        return new EmailMessage(statement.getStatementId(), Theme.FINISH_REGISTRATION, statement.getClient().getEmail());
     }
 
     /**
@@ -261,20 +283,127 @@ public class DealService {
      * @param statementId идентификатор заявки
      * @param request    объект с данными для завершения регистрации
      */
-    public void finishRegistration(String statementId, FinishRegistrationRequestDto request) {
+    @Transactional
+    public EmailMessage finishRegistration(String statementId, FinishRegistrationRequestDto request) {
         logger.info("Завершение регистрации и полный подсчет кредита для заявки с ID: {}", statementId);
 
         Statement statement = getStatementById(UUID.fromString(statementId));
         ScoringDataDto scoringData = ScoringDataMapper.toScoringDataDto(statement, request);
         logger.info("Создан запрос для МС Калькулятор: {}", scoringData);
 
-        CreditDto creditDto = sendScoringDataToCalculator(scoringData);
+        CreditDto creditDto;
+        try {
+            creditDto = sendScoringDataToCalculator(scoringData);
+        } catch (RuntimeException e) {
+            logger.error("Ошибка при получении данных кредита: {}", e.getMessage());
+            updateStatementStatus(statement, ApplicationStatus.CC_DENIED);
+            return new EmailMessage(statement.getStatementId(), Theme.STATEMENT_DENIED, statement.getClient().getEmail());
+        }
         List<PaymentScheduleElement> paymentScheduleElements = convertPaymentSchedule(creditDto.getPaymentSchedule());
 
         Credit credit = createAndSaveCredit(creditDto, paymentScheduleElements);
-        updateStatementStatus(statement, ApplicationStatus.DOCUMENT_CREATED);
+        statement.setCredit(credit);
+        updateStatementStatus(statement, ApplicationStatus.CC_APPROVED);
 
         logger.info("Статус заявки обновлен: {}", statement);
+
+        return new EmailMessage(statement.getStatementId(), Theme.CREATE_DOCUMENTS, statement.getClient().getEmail());
+    }
+
+    /**
+     * Генерирует PDF документ на основе информации из объекта Statement.
+     *
+     * @param statement объект Statement, содержащий информацию о клиенте и кредите
+     * @return массив байтов, представляющий сгенерированный PDF документ
+     * @throws RuntimeException если происходит ошибка при создании PDF документа
+     */
+    private byte[] generatePdfDocument(Statement statement) {
+        try {
+            Document document = new Document();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PdfWriter.getInstance(document, outputStream);
+
+            document.open();
+
+            Font boldFont = getFont(16, Font.BOLD, BaseColor.BLACK);
+            Font headerFont = getFont(12, Font.BOLD, BaseColor.BLACK);
+            Font regularFont = getFont(12, Font.NORMAL, BaseColor.BLACK);
+
+            // Информация о клиенте
+            Client client = statement.getClient();
+            String fullName = getFullName(client);
+            Passport passport = client.getPassport();
+
+            addParagraph(document, "Кредитный договор", boldFont);
+            addParagraph(document, " ", regularFont);
+            addParagraph(document, "Информация о клиенте:", headerFont);
+            addParagraph(document, "ФИО: " + fullName, regularFont);
+            addParagraph(document, "Дата рождения: " + client.getBirthDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")), regularFont);
+            addParagraph(document, "Email: " + client.getEmail(), regularFont);
+            addParagraph(document, "Паспортные данные:", headerFont);
+            addParagraph(document, "Серия: " + passport.getSeries(), regularFont);
+            addParagraph(document, "Номер: " + passport.getNumber(), regularFont);
+            if (passport.getIssueDate() != null) {
+                addParagraph(document, "Дата выдачи: " + passport.getIssueDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")), regularFont);
+            }
+            if (passport.getIssueBranch() != null) {
+                addParagraph(document, "Кем выдан: " + passport.getIssueBranch(), regularFont);
+            }
+            addParagraph(document, " ", regularFont);
+
+            // Информация о кредите
+            Credit credit = statement.getCredit();
+            addParagraph(document, "Информация о кредите:", headerFont);
+            addParagraph(document, "Сумма кредита: " + credit.getAmount(), regularFont);
+            addParagraph(document, "Срок кредита: " + credit.getTerm() + " месяцев", regularFont);
+            addParagraph(document, "Ежемесячный платеж: " + credit.getMonthlyPayment(), regularFont);
+            BigDecimal rate = statement.getCredit().getRate();
+            BigDecimal ratePercentage = rate.multiply(new BigDecimal(100));
+            addParagraph(document, "Процентная ставка: " + ratePercentage + "%", regularFont);
+            addParagraph(document, "ПСК: " + credit.getPsk(), regularFont);
+            addParagraph(document, " ", regularFont);
+
+            // График платежей
+            List<PaymentScheduleElement> paymentSchedule = SerializationUtil.deserializePaymentSchedule(credit.getPaymentSchedule(), objectMapper);
+            if (paymentSchedule != null && !paymentSchedule.isEmpty()) {
+                addParagraph(document, "График платежей:", headerFont);
+                for (PaymentScheduleElement payment : paymentSchedule) {
+                    addParagraph(document, "Номер платежа: " + payment.getNumber() +
+                            ", Дата: " + payment.getDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) +
+                            ", Сумма: " + payment.getTotalPayment() +
+                            ", Погашение процентов: " + payment.getInterestPayment() +
+                            ", Погашение основного долга: " + payment.getDebtPayment() +
+                            ", Остаток долга: " + payment.getRemainingDebt(), regularFont);
+                }
+            } else {
+                addParagraph(document, "График платежей отсутствует.", regularFont);
+            }
+            addParagraph(document, " ", regularFont);
+
+            // Дата создания заявки
+            LocalDate currentDate = LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String formattedDate = currentDate.format(formatter);
+            addParagraph(document, "Дата создания заявки: " + formattedDate, regularFont);
+
+            document.close();
+
+            return outputStream.toByteArray();
+        } catch (DocumentException e) {
+            logger.error("Ошибка при создании PDF документа: {}", e.getMessage());
+            throw new RuntimeException("Ошибка при создании PDF документа", e);
+        }
+    }
+
+
+
+    private void addParagraph(Document document, String text, Font font) throws DocumentException {
+        Paragraph paragraph = new Paragraph(text, font);
+        document.add(paragraph);
+    }
+
+    private String getFullName(Client client) {
+        return client.getLastName() + " " + client.getFirstName()  + " " + client.getMiddleName();
     }
 
     /**
@@ -307,7 +436,7 @@ public class DealService {
      * @return список элементов графика платежей в формате сущностей
      */
     private List<PaymentScheduleElement> convertPaymentSchedule(List<PaymentScheduleElementDto> paymentSchedule) {
-        List<PaymentScheduleElement> paymentScheduleElements = PaymentScheduleElementMapper.INSTANCE.toEntities(paymentSchedule);
+        List<PaymentScheduleElement> paymentScheduleElements = PaymentScheduleElementMapper.toEntities(paymentSchedule);
         logger.info("Преобразованы элементы графика платежей: {}", paymentScheduleElements);
         return paymentScheduleElements;
     }
@@ -339,6 +468,108 @@ public class DealService {
     }
 
     /**
+     * Отправляет документы для заявки с указанным идентификатором.
+     *
+     * @param statementId идентификатор заявки
+     * @return объект Statement с информацией для отправки email
+     */
+    @Transactional
+    public EmailMessage sendDocuments(String statementId) {
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        updateStatementStatus(statement, ApplicationStatus.PREPARE_DOCUMENTS);
+        byte[] pdfBytes = generatePdfDocument(statement);
+        return new EmailMessage(statement.getStatementId(), Theme.SEND_DOCUMENTS, statement.getClient().getEmail(), pdfBytes);
+    }
+
+    /**
+     * Подписывает документы для заявки с указанным идентификатором.
+     *
+     * @param statementId идентификатор заявки
+     * @return объект EmailMessage с информацией для отправки email
+     */
+    @Transactional
+    public EmailMessage signDocuments(String statementId) {
+        logger.info("Подписание документов для заявки с ID: {}", statementId);
+        Statement statement = getStatementById(UUID.fromString(statementId));
+
+        String sesCode = SesCodeGenerator.generateSesCode();
+        logger.debug("Сгенерирован SES код: {} для заявки с ID: {}", sesCode, statementId);
+
+        statement.setSesCode(sesCode);
+        statement.setSignDate(LocalDateTime.now());
+        statementRepository.save(statement);
+        logger.info("SES код сохранен в заявке с ID: {}", statementId);
+
+        EmailMessage emailMessage = new EmailMessage(statement.getStatementId(), Theme.SEND_SES, statement.getClient().getEmail());
+        emailMessage.setText("Потвердите согласие на оформление кредита с помощью кода: " + sesCode);
+        return emailMessage;
+    }
+
+    /**
+     * Кодирует документы для заявки с указанным идентификатором.
+     *
+     * @param statementId идентификатор заявки
+     * @param sesCode     код подтверждения
+     * @return объект EmailMessage с информацией для отправки email
+     */
+    @Transactional
+    public EmailMessage codeDocuments(String statementId, String sesCode) {
+        logger.info("Проверка SES кода для заявки с ID: {}", statementId);
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        if (!StringUtils.equals(statement.getSesCode(), sesCode)) {
+            logger.error("Неверный SES код для заявки с ID: {}", statementId);
+            throw new IllegalArgumentException("Неверный SES код");
+        }
+
+        logger.info("SES код верный, заявка с ID: {} подтверждена", statementId);
+        updateStatementStatus(statement, ApplicationStatus.DOCUMENT_SIGNED);
+        return new EmailMessage(statement.getStatementId(), Theme.CREDIT_ISSUED, statement.getClient().getEmail());
+    }
+
+    /**
+     * Обрабатывает успешную отправку сообщения в Kafka для документов.
+     *
+     * @param statementId идентификатор заявки
+     */
+    public void handleKafkaDocumentSuccess(String statementId) {
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        updateStatementStatus(statement, ApplicationStatus.DOCUMENT_CREATED);
+    }
+
+    /**
+     * Обрабатывает ошибку при отправке сообщения в Kafka для документов.
+     *
+     * @param statementId идентификатор заявки
+     * @param ex          исключение
+     */
+    public void handleKafkaDocumentFailure(String statementId, Throwable ex) {
+        logger.error("Ошибка при отправке сообщения в Kafka для заявки с ID {}: {}", statementId, ex.getMessage());
+    }
+
+    /**
+     * Обрабатывает успешную отправку сообщения в Kafka для кредита.
+     *
+     * @param statementId идентификатор заявки
+     */
+    public void handleKafkaCreditSuccess(String statementId) {
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        updateStatementStatus(statement, ApplicationStatus.CREDIT_ISSUED);
+        Credit credit = statement.getCredit();
+        updateCreditStatus(credit, CreditStatus.ISSUED);
+    }
+
+    /**
+     * Обрабатывает ошибку при отправке сообщения в Kafka для кредита.
+     *
+     * @param statementId идентификатор заявки
+     * @param ex          исключение
+     */
+    public void handleKafkaCreditFailure(String statementId, Throwable ex) {
+        logger.error("Ошибка при отправке сообщения в Kafka для заявки с ID {}: {}", statementId, ex.getMessage());
+    }
+
+
+    /**
      * Обновляет статус заявки.
      *
      * @param statement заявка
@@ -347,5 +578,16 @@ public class DealService {
     private void updateStatementStatus(Statement statement, ApplicationStatus status) {
         statement.setStatus(status);
         statementRepository.save(statement);
+    }
+
+    /**
+     * Обновляет статус кредита.
+     *
+     * @param credit       кредит для обновления
+     * @param creditStatus новый статус кредита
+     */
+    private void updateCreditStatus(Credit credit, CreditStatus creditStatus) {
+        credit.setCreditStatus(creditStatus);
+        creditRepository.save(credit);
     }
 }

@@ -3,47 +3,94 @@ version: '3.8'
 services:
   postgres:
     image: postgres:13
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: deal
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    env_file:
+      - .env
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT:-2181}
+      ZOOKEEPER_TICK_TIME: ${ZOOKEEPER_TICK_TIME:-2000}
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    env_file:
+      - .env
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID:-1}
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS:-PLAINTEXT://kafka:9092}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR:-1}
+
   deal:
     build:
       context: .
       dockerfile: ./deal/Dockerfile
+    env_file:
+      - .env
     ports:
       - "8081:8081"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/deal
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_DATASOURCE_URL=${DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - CALCULATOR_URL=http://calculator:8082/calculator
     depends_on:
       - postgres
+      - kafka
 
   calculator:
     build:
       context: .
       dockerfile: ./calculator/Dockerfile
+    env_file:
+      - .env
     ports:
       - "8082:8082"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SERVER_PORT=8082
-      - BASE_INTEREST_RATE=0.10
+      - BASE_INTEREST_RATE=${BASE_INTEREST_RATE:-0.10}
 
   statement:
     build:
       context: .
       dockerfile: ./statement/Dockerfile
+    env_file:
+      - .env
     ports:
       - "8083:8083"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+
+  dossier:
+    build:
+      context: .
+      dockerfile: ./dossier/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - kafka
 
 volumes:
   postgres_data:

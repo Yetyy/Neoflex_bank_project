@@ -7,7 +7,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="common-dto" />
+        <module name="common-lib" />
       </profile>
       <profile name="Annotation profile for deal" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -26,26 +26,24 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$USER_HOME$/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
-          <entry name="$USER_HOME$/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
+        <module name="dossier" />
+        <module name="statement" />
         <module name="calculator" />
       </profile>
-      <profile name="Annotation profile for statement" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$USER_HOME$/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
-        </processorPath>
-        <module name="statement" />
-      </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="api-docs" target="21" />
+      <module name="swagger" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="api-docs" options="" />
       <module name="calculator" options="-parameters -parameters" />
       <module name="common" options="" />
       <module name="deal" options="-parameters" />
+      <module name="dossier" options="" />
       <module name="statement" options="-parameters -parameters" />
     </option>
   </component>

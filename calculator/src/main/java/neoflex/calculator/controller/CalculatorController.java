@@ -1,10 +1,5 @@
 package neoflex.calculator.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import neoflex.dto.CreditDto;
 import neoflex.dto.LoanOfferDto;
@@ -36,14 +31,6 @@ public class CalculatorController {
      * @return список предложений по кредиту
      */
     @PostMapping("/offers")
-    @Operation(summary = "Расчет кредитных предложений", description = "Рассчитывает кредитные предложения на основе предоставленного запроса")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешная операция",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LoanOfferDto.class))),
-            @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                    content = @Content(mediaType = "application/json"))
-    })
     public List<LoanOfferDto> calculateLoanOffers(@RequestBody LoanStatementRequestDto request) {
         logger.info("Получен запрос на расчет кредитных предложений: {}", request);
         List<LoanOfferDto> loanOffers = calculatorService.generateLoanOffers(request);
@@ -58,14 +45,6 @@ public class CalculatorController {
      * @return детали кредита
      */
     @PostMapping("/calc")
-    @Operation(summary = "Расчет деталей кредита", description = "Рассчитывает детали кредита на основе предоставленных данных для скоринга")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешная операция",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = CreditDto.class))),
-            @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                    content = @Content(mediaType = "application/json"))
-    })
     public CreditDto calculateCreditDetails(@RequestBody ScoringDataDto scoringData) {
         logger.info("Получены данные для расчета деталей кредита: {}", scoringData);
         CreditDto creditDetails = calculatorService.calculateCredit(scoringData);

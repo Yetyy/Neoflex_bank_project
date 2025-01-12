@@ -1,0 +1,446 @@
+openapi: 3.0.0
+info:
+  title: API Documentation
+  version: 1.0.0
+paths:
+  /calculator/offers:
+    post:
+      summary: Расчет кредитных предложений
+      description: Рассчитывает кредитные предложения на основе предоставленного запроса
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanStatementRequestDto'
+      responses:
+        '200':
+          description: Успешная операция
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoanOfferDto'
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /calculator/calc:
+    post:
+      summary: Расчет деталей кредита
+      description: Рассчитывает детали кредита на основе предоставленных данных для скоринга
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoringDataDto'
+      responses:
+        '200':
+          description: Успешная операция
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditDto'
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /deal/statement:
+    post:
+      summary: Расчет возможных условий кредита
+      description: Рассчитывает возможные условия кредита на основе предоставленного запроса
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanStatementRequestDto'
+      responses:
+        '200':
+          description: Успешная операция
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoanOfferDto'
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /deal/offer/select:
+    post:
+      summary: Выбор предложения по кредиту
+      description: Выбирает одно из предложений по кредиту на основе предоставленного запроса
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanOfferDto'
+      responses:
+        '200':
+          description: Успешная операция
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /deal/calculate/{statementId}:
+    post:
+      summary: Завершение регистрации и полный подсчет кредита
+      description: Завершает регистрацию и выполняет полный подсчет кредита на основе предоставленного запроса
+      parameters:
+        - name: statementId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinishRegistrationRequestDto'
+      responses:
+        '200':
+          description: Успешная операция
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /deal/document/{statementId}/send:
+    post:
+      summary: Отправка документов
+      description: Отправляет документы для заявки с указанным идентификатором
+      parameters:
+        - name: statementId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешная операция
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /deal/document/{statementId}/sign:
+    post:
+      summary: Подписание документов
+      description: Отправляет SES код для подтверждения операции по документам
+      parameters:
+        - name: statementId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешная операция
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /deal/document/{statementId}/code:
+    post:
+      summary: Проверка полученного кода
+      description: Проверяет соответствие присланного кода и завершает оформление
+      parameters:
+        - name: statementId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Успешная операция
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/dossier/send-email:
+    post:
+      summary: Отправка письма
+      description: Отправляет письмо клиенту
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailMessage'
+      responses:
+        '200':
+          description: Успешная операция
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /statement:
+    post:
+      summary: Прескоринг и расчет возможных условий кредита
+      description: Отправляет запрос на прескоринг и расчет возможных условий кредита
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanStatementRequestDto'
+      responses:
+        '200':
+          description: Успешная операция
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoanOfferDto'
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+  /statement/offer:
+    post:
+      summary: Выбор одного из предложений
+      description: Выбирает одно из предложений по кредиту
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanOfferDto'
+      responses:
+        '200':
+          description: Успешная операция
+        '400':
+          description: Неверный ввод
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  schemas:
+    LoanStatementRequestDto:
+      type: object
+      properties:
+        amount:
+          type: number
+        term:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        middleName:
+          type: string
+        email:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        passportSeries:
+          type: string
+        passportNumber:
+          type: string
+    LoanOfferDto:
+      type: object
+      properties:
+        applicationId:
+          type: integer
+        requestedAmount:
+          type: number
+        totalAmount:
+          type: number
+        term:
+          type: integer
+        monthlyPayment:
+          type: number
+        rate:
+          type: number
+        isInsuranceEnabled:
+          type: boolean
+        isSalaryClient:
+          type: boolean
+    ScoringDataDto:
+      type: object
+      properties:
+        amount:
+          type: number
+        term:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        middleName:
+          type: string
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - NON_BINARY
+        maritalStatus:
+          type: string
+          enum:
+            - SINGLE
+            - MARRIED
+            - DIVORCED
+            - WIDOWED
+        dependentAmount:
+          type: integer
+        passportSeries:
+          type: string
+        passportNumber:
+          type: string
+        passportIssueDate:
+          type: string
+          format: date
+        passportIssueBranch:
+          type: string
+        employment:
+          $ref: '#/components/schemas/EmploymentDto'
+        account:
+          type: string
+        isInsuranceEnabled:
+          type: boolean
+        isSalaryClient:
+          type: boolean
+        birthDate:
+          type: string
+          format: date
+    CreditDto:
+      type: object
+      properties:
+        amount:
+          type: number
+        term:
+          type: integer
+        monthlyPayment:
+          type: number
+        rate:
+          type: number
+        psk:
+          type: number
+        isInsuranceEnabled:
+          type: boolean
+        isSalaryClient:
+          type: boolean
+        paymentSchedule:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentScheduleElement'
+    FinishRegistrationRequestDto:
+      type: object
+      properties:
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - NON_BINARY
+        maritalStatus:
+          type: string
+          enum:
+            - SINGLE
+            - MARRIED
+            - DIVORCED
+            - WIDOWED
+        dependentAmount:
+          type: integer
+        passportIssueDate:
+          type: string
+          format: date
+        passportIssueBranch:
+          type: string
+        employment:
+          $ref: '#/components/schemas/EmploymentDto'
+        account:
+          type: string
+    EmailMessage:
+      type: object
+      properties:
+        address:
+          type: string
+        theme:
+          type: string
+          enum:
+            - FINISH_REGISTRATION
+            - CREATE_DOCUMENTS
+            - SEND_DOCUMENTS
+            - SEND_SES
+            - CREDIT_ISSUED
+            - STATEMENT_DENIED
+        applicationId:
+          type: integer
+        sesCode:
+          type: string
+    EmploymentDto:
+      type: object
+      properties:
+        employmentStatus:
+          type: string
+          enum:
+            - UNEMPLOYED
+            - SELF_EMPLOYED
+            - EMPLOYED
+            - BUSINESS_OWNER
+        employerINN:
+          type: string
+        salary:
+          type: number
+        position:
+          type: string
+          enum:
+            - WORKER
+            - MID_MANAGER
+            - TOP_MANAGER
+            - OWNER
+        workExperienceTotal:
+          type: integer
+        workExperienceCurrent:
+          type: integer
+    PaymentScheduleElement:
+      type: object
+      properties:
+        number:
+          type: integer
+        date:
+          type: string
+          format: date
+        totalPayment:
+          type: number
+        interestPayment:
+          type: number
+        debtPayment:
+          type: number
+        remainingDebt:
+          type: number
