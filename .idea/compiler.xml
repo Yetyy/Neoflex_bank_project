@@ -30,6 +30,7 @@
         <module name="dossier" />
         <module name="statement" />
         <module name="calculator" />
+        <module name="gateway" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -44,6 +45,7 @@
       <module name="common" options="" />
       <module name="deal" options="-parameters" />
       <module name="dossier" options="" />
+      <module name="gateway" options="-parameters -parameters" />
       <module name="statement" options="-parameters -parameters" />
     </option>
   </component>
