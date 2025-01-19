@@ -29,13 +29,9 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: |
-            ./calculator/target/site/jacoco/jacoco.xml
-            ./deal/target/site/jacoco/jacoco.xml
-            ./statement/target/site/jacoco/jacoco.xml
-            ./dossier/target/site/jacoco/jacoco.xml
-            ./gateway/target/site/jacoco/jacoco.xml
+          directory: ./
           fail_ci_if_error: true
+
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
