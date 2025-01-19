@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+
 
 /**
  * Контроллер для обработки запросов, связанных с кредитными заявками.
@@ -30,11 +32,15 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/deal")
 public class DealController {
 
+
     private static final Logger logger = LoggerFactory.getLogger(DealController.class);
+
 
     private final DealService dealService;
 
+
     private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
+
 
     /**
      * Обрабатывает запрос на расчет возможных условий кредита.
@@ -48,6 +54,7 @@ public class DealController {
         return dealService.calculateLoanOffers(request);
     }
 
+
     /**
      * Обрабатывает запрос на выбор одного из предложений по кредиту.
      *
@@ -60,11 +67,12 @@ public class DealController {
         kafkaTemplate.send("finish-registration", emailMessage);
     }
 
+
     /**
      * Обрабатывает запрос на завершение регистрации и полный подсчет кредита.
      *
      * @param statementId идентификатор заявки
-     * @param request объект с данными для завершения регистрации
+     * @param request     объект с данными для завершения регистрации
      */
     @PostMapping("/calculate/{statementId}")
     public void finishRegistration(@PathVariable String statementId, @RequestBody FinishRegistrationRequestDto request) {
@@ -73,6 +81,7 @@ public class DealController {
         EmailMessage emailMessage = dealService.finishRegistration(statementId, request);
         kafkaTemplate.send("create-documents", emailMessage);
     }
+
 
     /**
      * Обрабатывает запрос на отправку документов.
@@ -84,7 +93,9 @@ public class DealController {
         logger.info("Получен запрос на отправку документов для заявки с ID: {}", statementId);
         try {
 
+
             EmailMessage emailMessage = dealService.sendDocuments(statementId);
+
 
             CompletableFuture<SendResult<String, EmailMessage>> future = kafkaTemplate.send("send-documents", emailMessage);
             future.whenComplete((result, ex) -> {
@@ -95,12 +106,14 @@ public class DealController {
                 }
             });
 
+
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Ошибка при обработке запроса на отправку документов: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
+
 
     /**
      * Обрабатывает запрос на подписание документов.
@@ -114,6 +127,7 @@ public class DealController {
         kafkaTemplate.send("send-ses", emailMessage);
     }
 
+
     /**
      * Обрабатывает запрос на подписание документов с кодом.
      *
@@ -126,6 +140,7 @@ public class DealController {
         try {
             EmailMessage emailMessage = dealService.codeDocuments(statementId, sesCode);
 
+
             CompletableFuture<SendResult<String, EmailMessage>> future = kafkaTemplate.send("credit-issued", emailMessage);
             future.whenComplete((result, ex) -> {
                 if (ex != null) {
@@ -135,6 +150,7 @@ public class DealController {
                 }
             });
 
+
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
             logger.error("Ошибка при обработке запроса на подписание документов: Некорректные данные: {}", e.getMessage());
@@ -143,5 +159,35 @@ public class DealController {
             logger.error("Ошибка при обработке запроса на подписание документов: {}", e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    /**
+     * Обрабатывает запрос на получение заявки по ID (админский метод).
+     *
+     * @param statementId идентификатор заявки
+     * @return заявка
+     */
+    @GetMapping("/admin/statement/{statementId}")
+    public ResponseEntity<Statement> getStatementByIdAdmin(@PathVariable String statementId) {
+        logger.info("Получен запрос на получение заявки по ID (админский метод): {}", statementId);
+        try {
+            Statement statement = dealService.getStatementById(UUID.fromString(statementId));
+            return ResponseEntity.ok(statement);
+        } catch (IllegalArgumentException e) {
+            logger.error("Заявка с ID {} не найдена: {}", statementId, e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Обрабатывает запрос на получение всех заявок (админский метод).
+     *
+     * @return список всех заявок
+     */
+    @GetMapping("/admin/statement")
+    public ResponseEntity<List<Statement>> getAllStatementsAdmin() {
+        logger.info("Получен запрос на получение всех заявок (админский метод)");
+        List<Statement> statements = dealService.getAllStatements();
+        return ResponseEntity.ok(statements);
     }
 }
