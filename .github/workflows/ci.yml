@@ -1,3 +1,4 @@
+#Пытаюсь запустить коммит с VPN из за CodeCov
 name: CI Pipeline
 
 on:
