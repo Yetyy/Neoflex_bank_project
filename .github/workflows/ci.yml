@@ -42,7 +42,8 @@ jobs:
           args: >
             -Dsonar.organization=${{ secrets.SONAR_ORG }}
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            -Dsonar.sources=./calculator/src/main/java,./deal/src/main/java,./statement/src/main/java,./dossier/src/main/java,./gateway/src/main/java
-            -Dsonar.tests=./calculator/src/test/java,./deal/src/test/java,./statement/src/test/java,./dossier/src/test/java,./gateway/src/test/java
-            -Dsonar.java.binaries=./calculator/target/classes,./deal/target/classes,./statement/target/classes,./dossier/target/classes,./gateway/target/classes
-            -Dsonar.java.test.binaries=./calculator/target/test-classes,./deal/target/test-classes,./statement/target/test-classes,./dossier/target/test-classes,./gateway/target/test-classes
+            -Dsonar.sources=./calculator/src/main/java,./deal/src/main/java,./statement/src/main/java
+            -Dsonar.tests=./calculator/src/test/java,./deal/src/test/java,./statement/src/test/java
+            -Dsonar.java.binaries=./calculator/target/classes,./deal/target/classes,./statement/target/classes
+            -Dsonar.java.test.binaries=./calculator/target/test-classes,./deal/target/test-classes,./statement/target/test-classes
+    
