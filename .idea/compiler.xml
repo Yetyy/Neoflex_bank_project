@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+      </profile>
+      <profile name="Annotation profile for deal" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.m2/repository/org/mapstruct/mapstruct-processor/1.5.3.Final/mapstruct-processor-1.5.3.Final.jar" />
+          <entry name="$USER_HOME$/.m2/repository/org/mapstruct/mapstruct/1.5.3.Final/mapstruct-1.5.3.Final.jar" />
+          <entry name="$USER_HOME$/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+        </processorPath>
+        <module name="deal" />
+      </profile>
+      <profile name="Annotation profile for parent-project" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+        </processorPath>
+        <module name="dossier" />
+        <module name="statement" />
+        <module name="calculator" />
+        <module name="common-lib" />
+        <module name="gateway" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="api-docs" target="21" />
+      <module name="swagger" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="api-docs" options="" />
+      <module name="calculator" options="-parameters -parameters" />
+      <module name="common" options="" />
+      <module name="common-lib" options="-parameters -parameters" />
+      <module name="deal" options="-parameters -parameters" />
+      <module name="dossier" options="-parameters -parameters" />
+      <module name="gateway" options="-parameters -parameters" />
+      <module name="statement" options="-parameters -parameters" />
+    </option>
+  </component>
+</project>
