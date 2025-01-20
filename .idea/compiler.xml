@@ -7,7 +7,6 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="common-lib" />
       </profile>
       <profile name="Annotation profile for deal" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -30,6 +29,7 @@
         <module name="dossier" />
         <module name="statement" />
         <module name="calculator" />
+        <module name="common-lib" />
         <module name="gateway" />
       </profile>
     </annotationProcessing>
@@ -43,8 +43,9 @@
       <module name="api-docs" options="" />
       <module name="calculator" options="-parameters -parameters" />
       <module name="common" options="" />
-      <module name="deal" options="-parameters" />
-      <module name="dossier" options="" />
+      <module name="common-lib" options="-parameters -parameters" />
+      <module name="deal" options="-parameters -parameters" />
+      <module name="dossier" options="-parameters -parameters" />
       <module name="gateway" options="-parameters -parameters" />
       <module name="statement" options="-parameters -parameters" />
     </option>
