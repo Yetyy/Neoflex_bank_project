@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ "feature/gateway&CI/initial" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "feature/gateway&CI/initial" ]
+    branches: [ "main" ]
 
 jobs:
   build:
