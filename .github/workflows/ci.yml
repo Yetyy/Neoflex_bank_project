@@ -33,8 +33,10 @@ jobs:
           fail_ci_if_error: true
 
       - name: SonarCloud Scan
-        run: mvn sonar:sonar \
-          -Dsonar.organization=${{ secrets.SONAR_ORG }} \
-          -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.branch.name=${{ github.ref_name }}
+        run: |
+          BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+          mvn sonar:sonar \
+            -Dsonar.organization=${{ secrets.SONAR_ORG }} \
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.branch.name=$BRANCH_NAME
