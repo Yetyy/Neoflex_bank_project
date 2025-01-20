@@ -2,9 +2,15 @@ name: CI Pipeline
 
 on:
   push:
+<<<<<<< Updated upstream
     branches: [ "feature/gateway&CI/initial" ]
   pull_request:
     branches: [ "feature/gateway&CI/initial" ]
+=======
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+>>>>>>> Stashed changes
 
 jobs:
   build:
@@ -48,3 +54,7 @@ jobs:
             -Dsonar.java.coveragePlugin=jacoco
             -Dsonar.coverage.jacoco.xmlReportPaths=./target/site/jacoco/jacoco.xml
             -Dsonar.branch.name=${{ github.head_ref || github.ref_name }}
+<<<<<<< Updated upstream
+=======
+            -Dsonar.java.binaries=**/target/classes
+>>>>>>> Stashed changes
