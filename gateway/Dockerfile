@@ -12,6 +12,6 @@ FROM openjdk:21-jdk
 
 WORKDIR /app
 
-COPY --from=builder /app/statement/target/*.jar app.jar
+COPY --from=builder /app/gateway/target/*.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

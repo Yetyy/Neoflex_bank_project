@@ -5,7 +5,7 @@ spring:
     name: calculator
 base:
   interest:
-    rate: ${BASE_INTEREST_RATE}
+    rate: ${BASE_INTEREST_RATE:-0.10}
 logging:
   level:
     root: info

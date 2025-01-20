@@ -9,6 +9,9 @@ import neoflex.enums.Gender;
 import neoflex.enums.MaritalStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -48,10 +51,11 @@ public class PreScoringTests {
         assertTrue(violations.isEmpty());
     }
 
-    @Test
-    public void testInvalidFirstName() {
+    @ParameterizedTest
+    @ValueSource(strings = {"J", "VeryLongFirstNameeeeeeeeeeeeeeeeeeeeeeeeeeeee"})
+    public void testInvalidFirstName(String firstName) {
         LoanStatementRequestDto requestDto = LoanStatementRequestDto.builder()
-                .firstName("J")
+                .firstName(firstName)
                 .lastName("Doe")
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
@@ -70,11 +74,12 @@ public class PreScoringTests {
         assertEquals("Имя должно содержать от 2 до 30 латинских букв", violations.iterator().next().getMessage());
     }
 
-    @Test
-    public void testInvalidLastName() {
+    @ParameterizedTest
+    @ValueSource(strings = {"D", "VeryLongLastNameeeeeeeeeeeeeeeeeeeeeeeeeeeee"})
+    public void testInvalidLastName(String lastName) {
         LoanStatementRequestDto requestDto = LoanStatementRequestDto.builder()
                 .firstName("John")
-                .lastName("D")
+                .lastName(lastName)
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
@@ -92,12 +97,13 @@ public class PreScoringTests {
         assertEquals("Фамилия должна содержать от 2 до 30 латинских букв", violations.iterator().next().getMessage());
     }
 
-    @Test
-    public void testInvalidMiddleName() {
+    @ParameterizedTest
+    @ValueSource(strings = {"S", "VeryLongMiddleNameeeeeeeeeeeeeeeeeeeeeeeeeeeee"})
+    public void testInvalidMiddleName(String middleName) {
         LoanStatementRequestDto requestDto = LoanStatementRequestDto.builder()
                 .firstName("John")
                 .lastName("Doe")
-                .middleName("S")
+                .middleName(middleName)
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
                 .gender(Gender.MALE)
@@ -268,8 +274,9 @@ public class PreScoringTests {
         assertEquals("Срок кредита должен быть больше или равен 6 месяцам", violations.iterator().next().getMessage());
     }
 
-    @Test
-    public void testInvalidPassportSeries() {
+    @ParameterizedTest
+    @ValueSource(strings = {"123", "12345"})
+    public void testInvalidPassportSeries(String passportSeries) {
         LoanStatementRequestDto requestDto = LoanStatementRequestDto.builder()
                 .firstName("John")
                 .lastName("Doe")
@@ -281,7 +288,7 @@ public class PreScoringTests {
                 .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
-                .passportSeries("123")
+                .passportSeries(passportSeries)
                 .passportNumber("567890")
                 .build();
 
@@ -290,8 +297,9 @@ public class PreScoringTests {
         assertEquals("Серия паспорта должна содержать 4 цифры", violations.iterator().next().getMessage());
     }
 
-    @Test
-    public void testInvalidPassportNumber() {
+    @ParameterizedTest
+    @ValueSource(strings = {"56789", "5678901"})
+    public void testInvalidPassportNumber(String passportNumber) {
         LoanStatementRequestDto requestDto = LoanStatementRequestDto.builder()
                 .firstName("John")
                 .lastName("Doe")
@@ -304,7 +312,7 @@ public class PreScoringTests {
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
                 .passportSeries("1234")
-                .passportNumber("56789")
+                .passportNumber(passportNumber)
                 .build();
 
         Set<ConstraintViolation<LoanStatementRequestDto>> violations = validator.validate(requestDto);

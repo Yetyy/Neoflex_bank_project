@@ -7,9 +7,10 @@ import neoflex.statement.controller.StatementController;
 import neoflex.statement.service.StatementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -18,11 +19,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ExtendWith(MockitoExtension.class)
 public class StatementControllerTest {
 
     @Mock
@@ -33,17 +36,20 @@ public class StatementControllerTest {
 
     private MockMvc mockMvc;
 
+    private LoanStatementRequestDto requestDto;
+    private LoanOfferDto offerDto1;
+    private LoanOfferDto offerDto2;
+
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(statementController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(statementController).build();
+        requestDto = new LoanStatementRequestDto();
+        offerDto1 = new LoanOfferDto();
+        offerDto2 = new LoanOfferDto();
     }
 
     @Test
     public void testGetLoanOffers() throws Exception {
-        LoanStatementRequestDto requestDto = new LoanStatementRequestDto();
-        LoanOfferDto offerDto1 = new LoanOfferDto();
-        LoanOfferDto offerDto2 = new LoanOfferDto();
         List<LoanOfferDto> loanOffers = Arrays.asList(offerDto1, offerDto2);
 
         when(statementService.getLoanOffers(any(LoanStatementRequestDto.class))).thenReturn(loanOffers);
@@ -57,15 +63,13 @@ public class StatementControllerTest {
 
     @Test
     public void testSelectLoanOffer() throws Exception {
-        LoanOfferDto offerDto = new LoanOfferDto();
+        doNothing().when(statementService).selectLoanOffer(any(LoanOfferDto.class));
 
         mockMvc.perform(post("/statement/offer")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(offerDto)))
+                        .content(asJsonString(offerDto1)))
                 .andExpect(status().isOk());
     }
-
-
 
     private static String asJsonString(final Object obj) {
         try {

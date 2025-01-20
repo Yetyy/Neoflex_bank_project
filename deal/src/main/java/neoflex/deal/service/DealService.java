@@ -241,7 +241,7 @@ public class DealService {
      * @param statementId ID заявки
      * @return заявка
      */
-    private Statement getStatementById(UUID statementId) {
+    public Statement getStatementById(UUID statementId) {
         return statementRepository.findById(statementId)
                 .orElseThrow(() -> new IllegalArgumentException("Заявка с ID " + statementId + " не найдена"));
     }
@@ -589,5 +589,15 @@ public class DealService {
     private void updateCreditStatus(Credit credit, CreditStatus creditStatus) {
         credit.setCreditStatus(creditStatus);
         creditRepository.save(credit);
+    }
+
+    /**
+     * Получает список всех заявок.
+     *
+     * @return список всех заявок
+     */
+    public List<Statement> getAllStatements() {
+        logger.info("Получен запрос на получение всех заявок (админский метод)");
+        return statementRepository.findAll();
     }
 }

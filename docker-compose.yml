@@ -64,7 +64,6 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
       - SERVER_PORT=8082
       - BASE_INTEREST_RATE=${BASE_INTEREST_RATE:-0.10}
 
@@ -76,8 +75,6 @@ services:
       - .env
     ports:
       - "8083:8083"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
 
   dossier:
     build:
@@ -87,10 +84,25 @@ services:
       - .env
     ports:
       - "8084:8084"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - kafka
+  gateway:
+    build:
+      context: .
+      dockerfile: ./gateway/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    environment:
+      - STATEMENT_URL=http://statement:8083
+      - DEAL_URL=http://deal:8081/deal
+      - DOSSIER_URL=http://dossier:8084/api/dossier
+    depends_on:
+      - deal
+      - calculator
+      - statement
+      - dossier
 
 volumes:
   postgres_data:
