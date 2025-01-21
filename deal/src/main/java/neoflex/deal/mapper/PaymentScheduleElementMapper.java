@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 
 public class PaymentScheduleElementMapper {
 
+    private PaymentScheduleElementMapper() {
+    }
+
     public static PaymentScheduleElement toEntity(PaymentScheduleElementDto dto) {
         return PaymentScheduleElement.builder()
                 .number(dto.getNumber())

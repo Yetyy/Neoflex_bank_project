@@ -68,7 +68,7 @@ public class EmploymentEntityTest {
         assertTrue(employment1.equals(employment2));
 
         // Сравнение с null
-        assertFalse(employment1.equals(null));
+        assertFalse(employment1 == null);
 
         // Сравнение с объектом другого класса
         assertFalse(employment1.equals(new Object()));

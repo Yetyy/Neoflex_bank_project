@@ -6,16 +6,19 @@ import neoflex.deal.entity.Client;
 import neoflex.deal.entity.Statement;
 import neoflex.dto.FinishRegistrationRequestDto;
 
-import java.math.BigDecimal;
 /**
  * Маппер для преобразования данных заявки и запроса на завершение регистрации в DTO для скоринга.
  */
 public class ScoringDataMapper {
+
+    private ScoringDataMapper() {
+    }
+
     /**
      * Преобразует данные заявки и запроса на завершение регистрации в DTO для скоринга.
      *
      * @param statement Заявка, содержащая данные клиента и кредита.
-     * @param request Запрос на завершение регистрации, содержащий данные о занятости.
+     * @param request   Запрос на завершение регистрации, содержащий данные о занятости.
      * @return DTO для скоринга, содержащий все необходимые данные для расчета кредита.
      */
     public static ScoringDataDto toScoringDataDto(Statement statement, FinishRegistrationRequestDto request) {

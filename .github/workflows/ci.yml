@@ -69,6 +69,6 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORG }}
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.java.coveragePlugin=jacoco
-            -Dsonar.coverage.jacoco.xmlReportPaths=./target/site/jacoco/jacoco.xml
-            -Dsonar.java.binaries=calculator/target/classes,common-lib/target/classes,deal/target/classes,statement/target/classes,dossier/target/classes,gateway/target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml
+            -Dsonar.java.binaries=**/target/classes
             -Dsonar.branch.name=${{ github.head_ref || github.ref_name }}

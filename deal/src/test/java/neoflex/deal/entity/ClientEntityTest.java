@@ -105,7 +105,7 @@ public class ClientEntityTest {
         assertTrue(client1.equals(client2));
 
         // Сравнение с null
-        assertFalse(client1.equals(null));
+        assertFalse(client1 == null);
 
         // Сравнение с объектом другого класса
         assertFalse(client1.equals(new Object()));

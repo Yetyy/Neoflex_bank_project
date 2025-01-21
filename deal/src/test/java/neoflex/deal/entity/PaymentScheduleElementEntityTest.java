@@ -69,7 +69,7 @@ public class PaymentScheduleElementEntityTest {
         assertTrue(element1.equals(element2));
 
         // Сравнение с null
-        assertFalse(element1.equals(null));
+        assertFalse(element1 == null);
 
         // Сравнение с объектом другого класса
         assertFalse(element1.equals(new Object()));

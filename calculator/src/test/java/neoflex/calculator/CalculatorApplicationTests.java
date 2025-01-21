@@ -8,6 +8,7 @@ class CalculatorApplicationTests {
 
 	@Test
 	void contextLoads() {
+		//Проверка загрузки Spring модулей
 	}
 
 }
