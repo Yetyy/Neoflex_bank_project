@@ -1,8 +1,7 @@
-package neoflex.statement;
+package neoflex.statement.service;
 
 import neoflex.dto.LoanOfferDto;
 import neoflex.dto.LoanStatementRequestDto;
-import neoflex.statement.service.StatementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,7 +72,7 @@ public class StatementServiceTest {
     }
 
     @Test
-    void getLoanOffers_success() {
+    void getLoanOffersSuccess() {
         List<LoanOfferDto> expectedOffers = Arrays.asList(offerDto1, offerDto2);
 
         when(webClient.post()).thenReturn(requestBodyUriSpec);
@@ -88,7 +87,7 @@ public class StatementServiceTest {
     }
 
     @Test
-    void getLoanOffers_error() {
+    void getLoanOffersError() {
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri("/deal/statement")).thenReturn(requestBodySpec);
         when(requestBodySpec.body(any(Mono.class), eq(LoanStatementRequestDto.class))).thenReturn(requestHeadersSpec);
@@ -102,7 +101,7 @@ public class StatementServiceTest {
     }
 
     @Test
-    void selectLoanOffer_success() {
+    void selectLoanOfferSuccess() {
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri("/deal/offer/select")).thenReturn(requestBodySpec);
         when(requestBodySpec.body(any(Mono.class), eq(LoanOfferDto.class))).thenReturn(requestHeadersSpec);
@@ -113,7 +112,7 @@ public class StatementServiceTest {
     }
 
     @Test
-    void selectLoanOffer_error() {
+    void selectLoanOfferError() {
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri("/deal/offer/select")).thenReturn(requestBodySpec);
         when(requestBodySpec.body(any(Mono.class), eq(LoanOfferDto.class))).thenReturn(requestHeadersSpec);

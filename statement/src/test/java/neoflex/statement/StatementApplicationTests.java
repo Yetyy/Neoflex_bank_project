@@ -8,6 +8,7 @@ class StatementApplicationTests {
 
 	@Test
 	void contextLoads() {
+		//Проверка загрузки Spring модулей
 	}
 
 }

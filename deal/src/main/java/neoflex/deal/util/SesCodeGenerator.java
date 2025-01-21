@@ -7,6 +7,9 @@ import org.apache.commons.lang3.RandomStringUtils;
  */
 public class SesCodeGenerator {
 
+    private SesCodeGenerator() {
+    }
+
     /**
      * Генерирует случайный 8-значный SES код.
      *

@@ -1,13 +1,10 @@
-package neoflex.deal;
+package neoflex.deal.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import neoflex.deal.entity.*;
 import neoflex.dto.*;
 import neoflex.enums.*;
 import neoflex.deal.repository.*;
-import neoflex.deal.service.DealService;
 import neoflex.deal.util.SesCodeGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,8 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,8 +28,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class DealServiceTest {
 
-    @Mock
-    private ClientRepository clientRepository;
 
     @Mock
     private StatementRepository statementRepository;
@@ -42,20 +35,10 @@ public class DealServiceTest {
     @Mock
     private CreditRepository creditRepository;
 
-    @Mock
-    private WebClient webClient;
-
-    @Mock
-    private ObjectMapper objectMapper;
 
     @InjectMocks
     private DealService dealService;
-
-    private LoanStatementRequestDto loanStatementRequestDto;
-    private LoanOfferDto loanOfferDto;
     private FinishRegistrationRequestDto finishRegistrationRequestDto;
-    private ScoringDataDto scoringDataDto;
-    private CreditDto creditDto;
     private Statement statement;
     private Client client;
     private Credit credit;
@@ -94,30 +77,6 @@ public class DealServiceTest {
                 .statusHistory(List.of())
                 .creationDate(LocalDateTime.now())
                 .build();
-        loanStatementRequestDto = LoanStatementRequestDto.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .middleName("Smith")
-                .birthDate(LocalDate.of(1990, 1, 1))
-                .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
-                .amount(BigDecimal.valueOf(20000))
-                .term(12)
-                .passportSeries("1234")
-                .passportNumber("567890")
-                .build();
-        loanOfferDto = LoanOfferDto.builder()
-                .statementId(statement.getStatementId())
-                .requestedAmount(BigDecimal.valueOf(20000))
-                .term(12)
-                .monthlyPayment(BigDecimal.valueOf(1000))
-                .totalAmount(BigDecimal.valueOf(24000))
-                .rate(BigDecimal.valueOf(0.05))
-                .isInsuranceEnabled(false)
-                .isSalaryClient(false)
-                .build();
         finishRegistrationRequestDto = FinishRegistrationRequestDto.builder()
                 .gender(Gender.MALE)
                 .maritalStatus(MaritalStatus.SINGLE)
@@ -134,38 +93,10 @@ public class DealServiceTest {
                         .build())
                 .accountNumber("1234567890")
                 .build();
-        scoringDataDto = ScoringDataDto.builder()
-                .amount(BigDecimal.valueOf(20000))
-                .term(12)
-                .firstName("John")
-                .lastName("Doe")
-                .middleName("Smith")
-                .gender(Gender.MALE)
-                .birthdate(LocalDate.of(1990, 1, 1))
-                .passportSeries("1234")
-                .passportNumber("567890")
-                .passportIssueDate(LocalDate.of(2020, 1, 1))
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
-                .employment(finishRegistrationRequestDto.getEmployment())
-                .accountNumber("1234567890")
-                .isInsuranceEnabled(false)
-                .isSalaryClient(false)
-                .build();
-        creditDto = CreditDto.builder()
-                .amount(BigDecimal.valueOf(20000))
-                .term(12)
-                .monthlyPayment(BigDecimal.valueOf(1000))
-                .rate(BigDecimal.valueOf(0.05))
-                .psk(BigDecimal.valueOf(0.01))
-                .isInsuranceEnabled(false)
-                .isSalaryClient(false)
-                .paymentSchedule(List.of())
-                .build();
     }
 
     @Test
-    void signDocuments_shouldUpdateStatementAndReturnEmailMessage() {
+    void signDocumentsShouldUpdateStatementAndReturnEmailMessage() {
         when(statementRepository.findById(statement.getStatementId())).thenReturn(Optional.of(statement));
         when(statementRepository.save(any(Statement.class))).thenReturn(statement);
 
@@ -181,7 +112,7 @@ public class DealServiceTest {
     }
 
     @Test
-    void codeDocuments_shouldUpdateStatementAndReturnEmailMessage() {
+    void codeDocumentsShouldUpdateStatementAndReturnEmailMessage() {
         String sesCode = SesCodeGenerator.generateSesCode();
         statement.setSesCode(sesCode);
         when(statementRepository.findById(statement.getStatementId())).thenReturn(Optional.of(statement));
@@ -197,7 +128,7 @@ public class DealServiceTest {
     }
 
     @Test
-    void codeDocuments_shouldThrowException_whenSesCodeIsInvalid() {
+    void codeDocumentsShouldThrowExceptionWhenSesCodeIsInvalid() {
         String sesCode = SesCodeGenerator.generateSesCode();
         statement.setSesCode(sesCode);
         when(statementRepository.findById(statement.getStatementId())).thenReturn(Optional.of(statement));
@@ -208,7 +139,7 @@ public class DealServiceTest {
     }
 
     @Test
-    void handleKafkaDocumentSuccess_shouldUpdateStatementStatus() {
+    void handleKafkaDocumentSuccessShouldUpdateStatementStatus() {
         when(statementRepository.findById(statement.getStatementId())).thenReturn(Optional.of(statement));
         when(statementRepository.save(any(Statement.class))).thenReturn(statement);
 
@@ -220,7 +151,7 @@ public class DealServiceTest {
     }
 
     @Test
-    void handleKafkaCreditSuccess_shouldUpdateStatementAndCreditStatus() {
+    void handleKafkaCreditSuccessShouldUpdateStatementAndCreditStatus() {
         statement.setCredit(credit);
         when(statementRepository.findById(statement.getStatementId())).thenReturn(Optional.of(statement));
         when(statementRepository.save(any(Statement.class))).thenReturn(statement);

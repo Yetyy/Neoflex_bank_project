@@ -73,7 +73,7 @@ public class CreditEntityTest {
         assertTrue(credit1.equals(credit2));
 
         // Сравнение с null
-        assertFalse(credit1.equals(null));
+        assertFalse(credit1 == null);
 
         // Сравнение с объектом другого класса
         assertFalse(credit1.equals(new Object()));
