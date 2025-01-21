@@ -1,9 +1,8 @@
-package neoflex.statement;
+package neoflex.statement.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import neoflex.dto.LoanOfferDto;
 import neoflex.dto.LoanStatementRequestDto;
-import neoflex.statement.controller.StatementController;
 import neoflex.statement.service.StatementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

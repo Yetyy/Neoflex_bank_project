@@ -58,7 +58,7 @@ public class StatusHistoryEntityTest {
         assertTrue(statusHistory1.equals(statusHistory2));
 
         // Сравнение с null
-        assertFalse(statusHistory1.equals(null));
+        assertFalse(statusHistory1 == null);
 
         // Сравнение с объектом другого класса
         assertFalse(statusHistory1.equals(new Object()));

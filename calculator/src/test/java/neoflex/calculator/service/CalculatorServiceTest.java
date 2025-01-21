@@ -54,7 +54,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testGenerateLoanOffers_allCombinations() {
+    void testGenerateLoanOffersAllCombinations() {
         List<LoanOfferDto> offers = calculatorService.generateLoanOffers(request);
         assertEquals(4, offers.size());
 
@@ -66,19 +66,19 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testGenerateLoanOffers_ageLessThan20() {
+    void testGenerateLoanOffersAgeLessThan20() {
         request.setBirthDate(LocalDate.now().minusYears(19));
         assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
     }
 
     @Test
-    void testGenerateLoanOffers_ageMoreThan65() {
+    void testGenerateLoanOffersAgeMoreThan65() {
         request.setBirthDate(LocalDate.now().minusYears(66));
         assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
     }
 
     @Test
-    void testGenerateLoanOffers_sortOrder() {
+    void testGenerateLoanOffersSortOrder() {
         List<LoanOfferDto> offers = calculatorService.generateLoanOffers(request);
         for (int i = 1; i < offers.size(); i++) {
             assertTrue(offers.get(i - 1).getRate().compareTo(offers.get(i).getRate()) <= 0);
@@ -86,16 +86,15 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testCalculateCredit_Unemployed() {
+    void testCalculateCreditUnemployed() {
         EmploymentDto employment = scoringData.getEmployment();
         employment.setEmploymentStatus(EmploymentStatus.UNEMPLOYED);
         scoringData.setEmployment(employment);
         assertThrows(IllegalArgumentException.class, () -> calculatorService.calculateCredit(scoringData));
     }
 
-
     @Test
-    void testCalculateCredit_MiddleManager() {
+    void testCalculateCreditMiddleManager() {
         EmploymentDto employment = scoringData.getEmployment();
         employment.setPosition(EmploymentPosition.MIDDLE_MANAGER);
         scoringData.setEmployment(employment);
@@ -105,7 +104,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testCalculateCredit_TopManager() {
+    void testCalculateCreditTopManager() {
         EmploymentDto employment = scoringData.getEmployment();
         employment.setPosition(EmploymentPosition.TOP_MANAGER);
         scoringData.setEmployment(employment);
@@ -115,22 +114,21 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testCalculateCredit_LoanAmountExceedsSalary() {
+    void testCalculateCreditLoanAmountExceedsSalary() {
         scoringData.setAmount(BigDecimal.valueOf(600000).multiply(BigDecimal.valueOf(25)));
         assertThrows(IllegalArgumentException.class, () -> calculatorService.calculateCredit(scoringData));
     }
 
     @Test
-    void testCalculateCredit_Married() {
+    void testCalculateCreditMarried() {
         scoringData.setMaritalStatus(MaritalStatus.MARRIED);
         CreditDto creditData = calculatorService.calculateCredit(scoringData);
         assertNotNull(creditData);
         assertTrue(creditData.getRate().compareTo(BigDecimal.valueOf(0.03)) < 0);
     }
 
-
     @Test
-    void testCalculateCredit_FemaleAge32to60() {
+    void testCalculateCreditFemaleAge32to60() {
         scoringData.setGender(Gender.FEMALE);
         scoringData.setBirthdate(LocalDate.of(1990, 5, 20)); // 32 years old
         CreditDto creditData = calculatorService.calculateCredit(scoringData);
@@ -139,7 +137,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testCalculateCredit_MaleAge30to55() {
+    void testCalculateCreditMaleAge30to55() {
         scoringData.setGender(Gender.MALE);
         scoringData.setBirthdate(LocalDate.of(1993, 5, 20)); // 30 years old
         CreditDto creditData = calculatorService.calculateCredit(scoringData);
@@ -147,9 +145,8 @@ public class CalculatorServiceTest {
         assertTrue(creditData.getRate().compareTo(BigDecimal.valueOf(0.03)) < 0);
     }
 
-
     @Test
-    void testCalculateCredit_InsufficientWorkExperience() {
+    void testCalculateCreditInsufficientWorkExperience() {
         EmploymentDto employment = scoringData.getEmployment();
         employment.setWorkExperienceTotal(17);
         scoringData.setEmployment(employment);
@@ -157,7 +154,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testCalculateCredit_InsufficientCurrentWorkExperience() {
+    void testCalculateCreditInsufficientCurrentWorkExperience() {
         EmploymentDto employment = scoringData.getEmployment();
         employment.setWorkExperienceCurrent(2);
         scoringData.setEmployment(employment);
@@ -165,7 +162,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testCalculateCredit_BusinessOwner() {
+    void testCalculateCreditBusinessOwner() {
         // 1. Создаем базовый сценарий
         ScoringDataDto baseScoringData = new ScoringDataDto();
         baseScoringData.setAmount(scoringData.getAmount());
@@ -203,7 +200,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testCalculateCredit_NonBinary() {
+    void testCalculateCreditNonBinary() {
         // 1. Создаем базовый сценарий
         ScoringDataDto baseScoringData = new ScoringDataDto();
         baseScoringData.setAmount(scoringData.getAmount());
@@ -235,7 +232,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testCalculateCredit_Divorced() {
+    void testCalculateCreditDivorced() {
         // 1. Создаем базовый сценарий
         ScoringDataDto baseScoringData = new ScoringDataDto();
         baseScoringData.setAmount(scoringData.getAmount());
@@ -267,7 +264,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    void testCalculateCredit_WidowWidower() {
+    void testCalculateCreditWidowWidower() {
         // 1. Создаем базовый сценарий
         ScoringDataDto baseScoringData = new ScoringDataDto();
         baseScoringData.setAmount(scoringData.getAmount());
@@ -298,9 +295,8 @@ public class CalculatorServiceTest {
         assertEquals(expectedRateDifference, actualRateDifference);
     }
 
-
     @Test
-    void testCalculateCredit_allFieldsFilled() {
+    void testCalculateCreditAllFieldsFilled() {
         CreditDto creditData = calculatorService.calculateCredit(scoringData);
         assertNotNull(creditData.getAmount());
         assertNotNull(creditData.getTerm());

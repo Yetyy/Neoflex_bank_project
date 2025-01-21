@@ -44,6 +44,7 @@ public class SerializationUtil {
             throw new RuntimeException("Ошибка при десериализации кредитного предложения", e);
         }
     }
+
     /**
      * Сериализует график платежей в JSON строку.
      *
@@ -69,12 +70,10 @@ public class SerializationUtil {
      */
     public static List<PaymentScheduleElement> deserializePaymentSchedule(String paymentScheduleJson, ObjectMapper objectMapper) {
         try {
-            List<PaymentScheduleElement> result = objectMapper.readValue(paymentScheduleJson, new TypeReference<List<PaymentScheduleElement>>(){});
-            return result;
+            return objectMapper.readValue(paymentScheduleJson, new TypeReference<List<PaymentScheduleElement>>(){});
         } catch (IOException e) {
             logger.error("Ошибка при десериализации графика платежей: {}", e.getMessage());
             throw new RuntimeException("Ошибка при десериализации графика платежей", e);
         }
     }
-
 }

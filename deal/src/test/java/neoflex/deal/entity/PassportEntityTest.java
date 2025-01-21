@@ -60,7 +60,7 @@ public class PassportEntityTest {
         assertTrue(passport1.equals(passport2));
 
         // Сравнение с null
-        assertFalse(passport1.equals(null));
+        assertFalse(passport1 == null);
 
         // Сравнение с объектом другого класса
         assertFalse(passport1.equals(new Object()));

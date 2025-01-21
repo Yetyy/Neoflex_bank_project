@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +35,7 @@ public class CalculatorService {
     private static final BigDecimal INSURANCE_DISCOUNT = BigDecimal.valueOf(0.03);
     private static final BigDecimal INSURANCE_COST_RATE = BigDecimal.valueOf(0.01);
     private static final BigDecimal SALARY_CLIENT_DISCOUNT = BigDecimal.valueOf(0.01);
+    private static final String DATE_FORMAT = "dd.MM.yyyy";
 
     /**
      * Генерирует список кредитных предложений на основе запроса.
@@ -262,7 +264,7 @@ public class CalculatorService {
 
         for (int i = 0; i < term; i++) {
             // Прибавляем i месяцев к текущей дате
-            LocalDate paymentDate = currentDate.plusMonths(i + 1);
+            LocalDate paymentDate = currentDate.plusMonths((long) i + 1);
 
             BigDecimal interestPayment = remainingPrincipal.multiply(monthlyRate).setScale(2, RoundingMode.HALF_UP);
             BigDecimal principalPayment = monthlyPayment.subtract(interestPayment).setScale(2, RoundingMode.HALF_UP);
@@ -283,5 +285,4 @@ public class CalculatorService {
         logger.debug("Рассчитан график аннуитетных платежей: {}", paymentSchedule);
         return paymentSchedule;
     }
-
 }

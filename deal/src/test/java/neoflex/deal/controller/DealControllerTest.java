@@ -1,8 +1,7 @@
-package neoflex.deal;
+package neoflex.deal.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import neoflex.deal.controller.DealController;
 import neoflex.dto.*;
 import neoflex.enums.EmploymentPosition;
 import neoflex.enums.EmploymentStatus;
@@ -21,7 +20,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

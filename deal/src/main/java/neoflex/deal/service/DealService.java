@@ -22,14 +22,12 @@ import neoflex.enums.Theme;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -102,11 +100,10 @@ public class DealService {
      * @return сохраненный паспорт
      */
     private Passport createAndSavePassport(LoanStatementRequestDto request) {
-        Passport passport = Passport.builder()
+        return Passport.builder()
                 .series(request.getPassportSeries())
                 .number(request.getPassportNumber())
                 .build();
-        return passport;
     }
 
     /**
@@ -396,14 +393,13 @@ public class DealService {
     }
 
 
-
     private void addParagraph(Document document, String text, Font font) throws DocumentException {
         Paragraph paragraph = new Paragraph(text, font);
         document.add(paragraph);
     }
 
     private String getFullName(Client client) {
-        return client.getLastName() + " " + client.getFirstName()  + " " + client.getMiddleName();
+        return client.getLastName() + " " + client.getFirstName() + " " + client.getMiddleName();
     }
 
     /**

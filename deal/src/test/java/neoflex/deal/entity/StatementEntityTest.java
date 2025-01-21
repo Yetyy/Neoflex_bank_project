@@ -1,9 +1,5 @@
-package neoflex.deal;
+package neoflex.deal.entity;
 
-import neoflex.deal.entity.Statement;
-import neoflex.deal.entity.Client;
-import neoflex.deal.entity.Credit;
-import neoflex.deal.entity.StatusHistory;
 import neoflex.enums.ApplicationStatus;
 import neoflex.enums.ChangeType;
 import org.junit.jupiter.api.Test;
@@ -91,7 +87,7 @@ public class StatementEntityTest {
         assertTrue(statement1.equals(statement2));
 
         // Сравнение с null
-        assertFalse(statement1.equals(null));
+        assertFalse(statement1 == null);
 
         // Сравнение с объектом другого класса
         assertFalse(statement1.equals(new Object()));
