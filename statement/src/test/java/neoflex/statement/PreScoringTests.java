@@ -38,9 +38,6 @@ public class PreScoringTests {
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
                 .passportSeries("1234")
@@ -60,9 +57,6 @@ public class PreScoringTests {
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
                 .passportSeries("1234")
@@ -83,9 +77,6 @@ public class PreScoringTests {
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
                 .passportSeries("1234")
@@ -106,9 +97,6 @@ public class PreScoringTests {
                 .middleName(middleName)
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
                 .passportSeries("1234")
@@ -128,9 +116,6 @@ public class PreScoringTests {
                 .middleName("Smith")
                 .birthDate(LocalDate.now().plusDays(1))
                 .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
                 .passportSeries("1234")
@@ -150,9 +135,6 @@ public class PreScoringTests {
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
                 .passportSeries("1234")
@@ -164,71 +146,6 @@ public class PreScoringTests {
         assertEquals("Email адрес должен быть корректным", violations.iterator().next().getMessage());
     }
 
-    @Test
-    public void testInvalidGender() {
-        LoanStatementRequestDto requestDto = LoanStatementRequestDto.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .middleName("Smith")
-                .birthDate(LocalDate.of(1990, 1, 1))
-                .email("john.doe@example.com")
-                .gender(null)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
-                .amount(BigDecimal.valueOf(20000))
-                .term(6)
-                .passportSeries("1234")
-                .passportNumber("567890")
-                .build();
-
-        Set<ConstraintViolation<LoanStatementRequestDto>> violations = validator.validate(requestDto);
-        assertEquals(1, violations.size());
-        assertEquals("Пол не может быть пустым", violations.iterator().next().getMessage());
-    }
-
-    @Test
-    public void testInvalidMaritalStatus() {
-        LoanStatementRequestDto requestDto = LoanStatementRequestDto.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .middleName("Smith")
-                .birthDate(LocalDate.of(1990, 1, 1))
-                .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(null)
-                .dependentAmount(0)
-                .amount(BigDecimal.valueOf(20000))
-                .term(6)
-                .passportSeries("1234")
-                .passportNumber("567890")
-                .build();
-
-        Set<ConstraintViolation<LoanStatementRequestDto>> violations = validator.validate(requestDto);
-        assertEquals(1, violations.size());
-        assertEquals("Семейное положение не может быть пустым", violations.iterator().next().getMessage());
-    }
-
-    @Test
-    public void testInvalidDependentAmount() {
-        LoanStatementRequestDto requestDto = LoanStatementRequestDto.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .middleName("Smith")
-                .birthDate(LocalDate.of(1990, 1, 1))
-                .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(-1)
-                .amount(BigDecimal.valueOf(20000))
-                .term(6)
-                .passportSeries("1234")
-                .passportNumber("567890")
-                .build();
-
-        Set<ConstraintViolation<LoanStatementRequestDto>> violations = validator.validate(requestDto);
-        assertEquals(1, violations.size());
-        assertEquals("Количество иждивенцев не может быть отрицательным", violations.iterator().next().getMessage());
-    }
 
     @Test
     public void testInvalidAmount() {
@@ -238,9 +155,6 @@ public class PreScoringTests {
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(19999))
                 .term(6)
                 .passportSeries("1234")
@@ -260,9 +174,6 @@ public class PreScoringTests {
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(5)
                 .passportSeries("1234")
@@ -283,9 +194,6 @@ public class PreScoringTests {
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
                 .passportSeries(passportSeries)
@@ -306,9 +214,6 @@ public class PreScoringTests {
                 .middleName("Smith")
                 .birthDate(LocalDate.of(1990, 1, 1))
                 .email("john.doe@example.com")
-                .gender(Gender.MALE)
-                .maritalStatus(MaritalStatus.SINGLE)
-                .dependentAmount(0)
                 .amount(BigDecimal.valueOf(20000))
                 .term(6)
                 .passportSeries("1234")

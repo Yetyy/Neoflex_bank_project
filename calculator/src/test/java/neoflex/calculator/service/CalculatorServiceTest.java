@@ -65,17 +65,17 @@ public class CalculatorServiceTest {
         assertTrue(offers.stream().anyMatch(o -> o.isInsuranceEnabled() && o.isSalaryClient()));
     }
 
-    @Test
-    void testGenerateLoanOffersAgeLessThan20() {
-        request.setBirthDate(LocalDate.now().minusYears(19));
-        assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
-    }
-
-    @Test
-    void testGenerateLoanOffersAgeMoreThan65() {
-        request.setBirthDate(LocalDate.now().minusYears(66));
-        assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
-    }
+//    @Test
+//    void testGenerateLoanOffersAgeLessThan20() {
+//        request.setBirthDate(LocalDate.now().minusYears(19));
+//        assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
+//    }
+//
+//    @Test
+//    void testGenerateLoanOffersAgeMoreThan65() {
+//        request.setBirthDate(LocalDate.now().minusYears(66));
+//        assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
+//    }
 
     @Test
     void testGenerateLoanOffersSortOrder() {

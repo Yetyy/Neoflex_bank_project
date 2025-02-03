@@ -130,9 +130,6 @@ public class DealService {
                 .middleName(request.getMiddleName())
                 .birthDate(request.getBirthDate())
                 .email(request.getEmail())
-                .gender(request.getGender())
-                .maritalStatus(request.getMaritalStatus())
-                .dependentAmount(request.getDependentAmount())
                 .passport(passport)
                 .employment(employment)
                 .build();

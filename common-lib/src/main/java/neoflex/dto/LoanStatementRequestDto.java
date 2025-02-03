@@ -1,15 +1,12 @@
-/**
- * DTO для данных заявки на кредит.
- */
 package neoflex.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import neoflex.enums.Gender;
-import neoflex.enums.MaritalStatus;
 import jakarta.validation.constraints.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -27,19 +24,13 @@ public class LoanStatementRequestDto {
 
     @NotNull(message = "Дата рождения не может быть пустой")
     @Past(message = "Дата рождения должна быть в прошлом")
+    @JsonProperty("birthdate")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
+
 
     @Email(message = "Email адрес должен быть корректным")
     private String email;
-
-    @NotNull(message = "Пол не может быть пустым")
-    private Gender gender;
-
-    @NotNull(message = "Семейное положение не может быть пустым")
-    private MaritalStatus maritalStatus;
-
-    @Min(value = 0, message = "Количество иждивенцев не может быть отрицательным")
-    private int dependentAmount;
 
     @NotNull(message = "Сумма кредита не может быть пустой")
     @Min(value = 20000, message = "Сумма кредита должна быть больше или равна 20000")
