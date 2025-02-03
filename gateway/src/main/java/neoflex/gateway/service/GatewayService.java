@@ -28,7 +28,6 @@ public class GatewayService {
     private String dealUrl;
     @Value("${DOSSIER_URL}")
     private String dossierUrl;
-
     /**
      * Перенаправляет запрос на указанный URL с заданным телом и типом ответа.
      *
@@ -40,12 +39,12 @@ public class GatewayService {
      * @return  ответ от микросервиса
      * @throws RuntimeException если происходит ошибка при перенаправлении запроса
      */
-    public <T, R> ResponseEntity<R> forwardRequest(String path, T requestBody, Class<R> responseType) {
+    public <T, R> ResponseEntity<R> forwardRequest(HttpMethod method, String path, T requestBody, Class<R> responseType) {
         String url = getUrl(path);
         logger.info("Перенаправление запроса на URL: {}, с телом: {}", url, requestBody);
 
         try {
-            Mono<ResponseEntity<R>> responseMono = webClient.method(HttpMethod.POST)
+            Mono<ResponseEntity<R>> responseMono = webClient.method(method)
                     .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Mono.justOrEmpty(requestBody), requestBody != null ? requestBody.getClass() : Object.class)
@@ -67,7 +66,6 @@ public class GatewayService {
             throw new RuntimeException("Ошибка перенаправления запроса: " + e.getMessage());
         }
     }
-
     /**
      * Перенаправляет запрос на указанный URL с заданным телом и параметризованным типом ответа.
      *
@@ -79,12 +77,12 @@ public class GatewayService {
      * @return  ответ от микросервиса
      * @throws RuntimeException если происходит ошибка при перенаправлении запроса
      */
-    public <T, R> ResponseEntity<R> forwardRequest(String path, T requestBody, ParameterizedTypeReference<R> responseType) {
+    public <T, R> ResponseEntity<R> forwardRequest(HttpMethod method, String path, T requestBody, ParameterizedTypeReference<R> responseType) {
         String url = getUrl(path);
         logger.info("Перенаправление запроса на URL: {}, с телом: {}", url, requestBody);
 
         try {
-            Mono<ResponseEntity<R>> responseMono = webClient.method(HttpMethod.POST)
+            Mono<ResponseEntity<R>> responseMono = webClient.method(method)
                     .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Mono.justOrEmpty(requestBody), requestBody != null ? requestBody.getClass() : Object.class)
@@ -107,6 +105,7 @@ public class GatewayService {
         }
     }
 
+
     /**
      * Определяет URL микросервиса на основе пути запроса.
      *
@@ -117,10 +116,12 @@ public class GatewayService {
     private String getUrl(String path) {
         if (path.startsWith("/statement")) {
             return statementUrl + path;
-        } else if (path.startsWith("/calculate") || path.startsWith("/document")) {
+        } else if (path.startsWith("/calculate") || path.startsWith("/document") || path.startsWith("")) {
             return dealUrl + path;
         } else {
             throw new IllegalArgumentException("Неизвестный путь: " + path);
         }
     }
+
+
 }

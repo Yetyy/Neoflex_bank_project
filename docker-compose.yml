@@ -96,7 +96,7 @@ services:
       - "8080:8080"
     environment:
       - STATEMENT_URL=http://statement:8083
-      - DEAL_URL=http://deal:8081/deal
+      - DEAL_URL=http://deal:8081
       - DOSSIER_URL=http://dossier:8084/api/dossier
     depends_on:
       - deal
