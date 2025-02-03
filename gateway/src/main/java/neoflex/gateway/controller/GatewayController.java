@@ -30,9 +30,9 @@ public class GatewayController {
         return gatewayService.forwardRequest(HttpMethod.POST, "/statement/offer", offer, Void.class);
     }
 
-    @PutMapping("/application/registration/{applicationId}")
+    @PostMapping("/application/registration/{applicationId}")
     public ResponseEntity<Void> calculate(@PathVariable String applicationId, @RequestBody FinishRegistrationRequestDto request) {
-        return gatewayService.forwardRequest(HttpMethod.PUT, "/deal/calculate/" + applicationId, request, Void.class);
+        return gatewayService.forwardRequest(HttpMethod.POST, "/deal/calculate/" + applicationId, request, Void.class);
     }
 
     @GetMapping("/admin/application/{applicationId}")
