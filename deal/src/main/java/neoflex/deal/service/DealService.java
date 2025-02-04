@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import neoflex.deal.mapper.EmploymentMapper;
 import neoflex.dto.*;
 import neoflex.deal.entity.*;
 import neoflex.enums.ApplicationStatus;
@@ -282,6 +283,23 @@ public class DealService {
         logger.info("Завершение регистрации и полный подсчет кредита для заявки с ID: {}", statementId);
 
         Statement statement = getStatementById(UUID.fromString(statementId));
+        Client client = statement.getClient();
+
+        // Обновление данных клиента
+        client.setGender(request.getGender());
+        client.setMaritalStatus(request.getMaritalStatus());
+        client.setDependentAmount(request.getDependentAmount());
+        client.setAccountNumber(request.getAccountNumber());
+        // Используем EmploymentMapper для преобразования EmploymentDto в Employment
+        client.setEmployment(EmploymentMapper.toEntity(request.getEmployment()));
+
+        // Обновление данных паспорта
+        Passport passport = client.getPassport();
+        passport.setIssueDate(request.getPassportIssueDate());
+        passport.setIssueBranch(request.getPassportIssueBranch());
+
+        clientRepository.save(client); // Сохраняем изменения клиента
+
         ScoringDataDto scoringData = ScoringDataMapper.toScoringDataDto(statement, request);
         logger.info("Создан запрос для МС Калькулятор: {}", scoringData);
 

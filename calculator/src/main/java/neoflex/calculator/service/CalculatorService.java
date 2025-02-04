@@ -218,6 +218,13 @@ public class CalculatorService {
                 throw new IllegalArgumentException("Отказ: стаж работы менее 18 месяцев или текущий стаж менее 3 месяцев.");
             }
 
+            // **Добавляем проверку на минимальную ставку**
+            BigDecimal minRate = BigDecimal.valueOf(0.001); // Например, 0.1%
+            if (rate.compareTo(BigDecimal.ZERO) <= 0) {
+                rate = minRate;
+                logger.warn("Процентная ставка стала меньше или равна 0. Установлена минимальная ставка: {}", minRate);
+            }
+
             // Расчет аннуитентного платежа и ПСК
             BigDecimal monthlyPayment = calculateAnnuityMonthlyPayment(scoringData.getAmount(), rate, scoringData.getTerm());
             BigDecimal psk = monthlyPayment.multiply(BigDecimal.valueOf(scoringData.getTerm()));
