@@ -138,7 +138,9 @@ public class DealController {
     public ResponseEntity<Void> codeDocuments(@PathVariable String statementId, @RequestBody String sesCode) {
         logger.info("Получен запрос на подписание документов с кодом для заявки с ID: {}, код: {}", statementId, sesCode);
         try {
-            EmailMessage emailMessage = dealService.codeDocuments(statementId, sesCode);
+            String extractedSesCode = sesCode.replaceAll("^\"|\"$", "");
+
+            EmailMessage emailMessage = dealService.codeDocuments(statementId, extractedSesCode);
 
 
             CompletableFuture<SendResult<String, EmailMessage>> future = kafkaTemplate.send("credit-issued", emailMessage);
