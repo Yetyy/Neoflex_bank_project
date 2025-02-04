@@ -40,7 +40,9 @@ public class EmailService {
      * @param emailMessage сообщение email
      */
     public void sendFinishRegistrationEmail(EmailMessage emailMessage) {
-        sendEmail(emailMessage, "Завершите оформление");
+        String link = "http://localhost:5173/loan/" + emailMessage.getStatementId();
+        String text = "Завершите оформление. Ссылка: " + link;
+        sendEmail(emailMessage, text);
     }
 
     /**
@@ -49,7 +51,9 @@ public class EmailService {
      * @param emailMessage сообщение email
      */
     public void sendCreateDocumentsEmail(EmailMessage emailMessage) {
-        sendEmail(emailMessage, "Перейдите к оформлению документов");
+        String link = "http://localhost:5173/loan/" + emailMessage.getStatementId() + "/document";
+        String text = "Перейдите к оформлению документов. Ссылка: " + link;
+        sendEmail(emailMessage, text);
     }
 
     /**
@@ -58,7 +62,8 @@ public class EmailService {
      * @param emailMessage сообщение email
      */
     public void sendDocumentsEmail(EmailMessage emailMessage) {
-        sendEmailWithAttachment(emailMessage, "Отправлены документы");
+        String link = "http://localhost:5173/loan/" + emailMessage.getStatementId() + "/document/sign";
+        sendEmailWithAttachment(emailMessage, "Отправлены документы. Ссылка: " + link);
     }
 
     /**
@@ -67,7 +72,9 @@ public class EmailService {
      * @param emailMessage сообщение email
      */
     public void sendSesEmail(EmailMessage emailMessage) {
-        sendEmail(emailMessage, emailMessage.getText());
+        String link = "http://localhost:5173/loan/" + emailMessage.getStatementId() + "/code";
+        String text = emailMessage.getText() + "\nСсылка для подтверждения: " + link;
+        sendEmail(emailMessage, text);
     }
 
     /**
