@@ -537,6 +537,14 @@ public class DealService {
         return new EmailMessage(statement.getStatementId(), Theme.CREDIT_ISSUED, statement.getClient().getEmail());
     }
 
+    @Transactional
+    public void updateStatementStatus(UUID statementId, ApplicationStatus status) {
+        Statement statement = getStatementById(statementId);
+        statement.setStatus(status);
+        statementRepository.save(statement);
+        logger.info("Статус заявки {} обновлен на {}", statementId, status);
+    }
+
     /**
      * Обрабатывает успешную отправку сообщения в Kafka для документов.
      *

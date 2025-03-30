@@ -7,6 +7,7 @@ import neoflex.dto.FinishRegistrationRequestDto;
 import neoflex.dto.LoanOfferDto;
 import neoflex.dto.LoanStatementRequestDto;
 import neoflex.deal.service.DealService;
+import neoflex.enums.ApplicationStatus;
 import neoflex.enums.Theme;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -180,6 +181,14 @@ public class DealController {
             return ResponseEntity.notFound().build();
         }
     }
+    //Java-doc
+    @PostMapping("/admin/statement/{statementId}/status")
+    public ResponseEntity<Void> updateStatementStatus(@PathVariable String statementId, @RequestBody ApplicationStatus status) {
+        logger.info("Обновление статуса заявки {} на {}", statementId, status);
+        dealService.updateStatementStatus(UUID.fromString(statementId), status);
+        return ResponseEntity.ok().build();
+    }
+
 
     /**
      * Обрабатывает запрос на получение всех заявок (админский метод).

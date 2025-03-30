@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * Сервис для перенаправления запросов на другие микросервисы.
  */
@@ -28,6 +31,15 @@ public class GatewayService {
     private String dealUrl;
     @Value("${DOSSIER_URL}")
     private String dossierUrl;
+    @Value("${AUTH_URL}")
+    private String authUrl;
+
+
+    private void logToConsole(String message) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME);
+        System.out.printf("[%s] %s\n", timestamp, message);
+    }
+
     /**
      * Перенаправляет запрос на указанный URL с заданным телом и типом ответа.
      *
@@ -42,6 +54,7 @@ public class GatewayService {
     public <T, R> ResponseEntity<R> forwardRequest(HttpMethod method, String path, T requestBody, Class<R> responseType) {
         String url = getUrl(path);
         logger.info("Перенаправление запроса на URL: {}, с телом: {}", url, requestBody);
+        logToConsole(String.format("Forwarding %s request to: %s", method, url));
 
         try {
             Mono<ResponseEntity<R>> responseMono = webClient.method(method)
@@ -66,6 +79,7 @@ public class GatewayService {
             throw new RuntimeException("Ошибка перенаправления запроса: " + e.getMessage());
         }
     }
+
     /**
      * Перенаправляет запрос на указанный URL с заданным телом и параметризованным типом ответа.
      *
@@ -105,7 +119,6 @@ public class GatewayService {
         }
     }
 
-
     /**
      * Определяет URL микросервиса на основе пути запроса.
      *
@@ -116,12 +129,82 @@ public class GatewayService {
     private String getUrl(String path) {
         if (path.startsWith("/statement")) {
             return statementUrl + path;
-        } else if (path.startsWith("/calculate") || path.startsWith("/document") || path.startsWith("")) {
+        } else if (path.startsWith("/deal") || path.startsWith("/calculate") || path.startsWith("/document")) {
             return dealUrl + path;
+        } else if (path.startsWith("/api/dossier")) {
+            return dossierUrl + path;
+        } else if (path.startsWith("/auth")) {
+
+            return authUrl + path;
         } else {
             throw new IllegalArgumentException("Неизвестный путь: " + path);
         }
     }
 
+    // New functions added below
 
+    /**
+     * Перенаправляет GET запрос на указанный URL и возвращает ответ в виде строки.
+     *
+     * @param path путь запроса
+     * @return ответ от микросервиса в виде строки
+     * @throws RuntimeException если происходит ошибка при перенаправлении запроса
+     */
+    public String forwardGetStringResponse(String path) {
+        String url = getUrl(path);
+        logger.info("Перенаправление GET запроса на URL: {}", url);
+
+        try {
+            Mono<String> responseMono = webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .onStatus(httpStatus -> httpStatus.isError(), clientResponse -> {
+                        logger.error("Ошибка ответа от URL: {}, статус: {}", url, clientResponse.statusCode());
+                        return clientResponse.bodyToMono(String.class)
+                                .flatMap(errorBody -> Mono.error(new RuntimeException("Ошибка от сервиса: " + clientResponse.statusCode() + ", тело: " + errorBody)));
+                    })
+                    .bodyToMono(String.class)
+                    .doOnError(e -> logger.error("Ошибка во время запроса к URL: {}, ошибка: {}", url, e.getMessage()));
+
+            return responseMono.block();
+
+        } catch (Exception e) {
+            logger.error("Ошибка перенаправления GET запроса на URL: {}, ошибка: {}", url, e.getMessage());
+            throw new RuntimeException("Ошибка перенаправления GET запроса: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Перенаправляет POST запрос на указанный URL с заданным телом и возвращает ответ в виде строки.
+     *
+     * @param path        путь запроса
+     * @param requestBody тело запроса
+     * @return ответ от микросервиса в виде строки
+     * @throws RuntimeException если происходит ошибка при перенаправлении запроса
+     */
+    public String forwardPostStringResponse(String path, Object requestBody) {
+        String url = getUrl(path);
+        logger.info("Перенаправление POST запроса на URL: {}, с телом: {}", url, requestBody);
+
+        try {
+            Mono<String> responseMono = webClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Mono.justOrEmpty(requestBody), requestBody != null ? requestBody.getClass() : Object.class)
+                    .retrieve()
+                    .onStatus(httpStatus -> httpStatus.isError(), clientResponse -> {
+                        logger.error("Ошибка ответа от URL: {}, статус: {}", url, clientResponse.statusCode());
+                        return clientResponse.bodyToMono(String.class)
+                                .flatMap(errorBody -> Mono.error(new RuntimeException("Ошибка от сервиса: " + clientResponse.statusCode() + ", тело: " + errorBody)));
+                    })
+                    .bodyToMono(String.class)
+                    .doOnError(e -> logger.error("Ошибка во время запроса к URL: {}, ошибка: {}", url, e.getMessage()));
+
+            return responseMono.block();
+
+        } catch (Exception e) {
+            logger.error("Ошибка перенаправления POST запроса на URL: {}, ошибка: {}", url, e.getMessage());
+            throw new RuntimeException("Ошибка перенаправления POST запроса: " + e.getMessage());
+        }
+    }
 }

@@ -1,10 +1,8 @@
 package neoflex.gateway.controller;
 
 import lombok.RequiredArgsConstructor;
-import neoflex.dto.EmailMessage;
-import neoflex.dto.FinishRegistrationRequestDto;
-import neoflex.dto.LoanOfferDto;
-import neoflex.dto.LoanStatementRequestDto;
+import neoflex.dto.*;
+import neoflex.enums.ApplicationStatus;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +55,20 @@ public class GatewayController {
 
     @PostMapping("/application/{applicationId}/deny")
     public ResponseEntity<Void> denyApplication(@PathVariable String applicationId) {
-        return gatewayService.forwardRequest(HttpMethod.POST, "/deal/admin/statement/" + applicationId + "/status", null, Void.class);
+        return gatewayService.forwardRequest(HttpMethod.POST, "/deal/admin/statement/" + applicationId + "/status", ApplicationStatus.CLIENT_DENIED, Void.class);
+    }
+
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponseDto> register(@RequestBody RegisterRequestDto requestDto) {
+        System.out.printf("Получил обращение на /register");
+        return gatewayService.forwardRequest(HttpMethod.POST, "/auth/register", requestDto, AuthResponseDto.class);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDto> login(@RequestBody RegisterRequestDto requestDto) {
+        System.out.printf("Получил обращение на /login");
+        return gatewayService.forwardRequest(HttpMethod.POST, "/auth/login", requestDto, AuthResponseDto.class);
     }
 
     @PostMapping("/email")

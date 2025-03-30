@@ -82,15 +82,20 @@ public class CalculatorService {
 
         BigDecimal loanAmount = request.getAmount();
 
-        //Применение правил скоринга по страховке
+        // Применение правил скоринга по страховке
         if (isInsuranceEnabled) {
             interestRate = interestRate.subtract(INSURANCE_DISCOUNT);
             BigDecimal insuranceCost = loanAmount.multiply(INSURANCE_COST_RATE);
             loanAmount = loanAmount.add(insuranceCost);
         }
-        //Применение правил скоринга по зарплатному клиенту
+        // Применение правил скоринга по зарплатному клиенту
         if (isSalaryClient) {
             interestRate = interestRate.subtract(SALARY_CLIENT_DISCOUNT);
+        }
+
+        // Устанавливаем минимальную ставку
+        if (interestRate.compareTo(BigDecimal.valueOf(0.05)) < 0) {
+            interestRate = BigDecimal.valueOf(0.05);
         }
 
         BigDecimal monthlyPayment = calculateAnnuityMonthlyPayment(loanAmount, interestRate, request.getTerm());
@@ -110,6 +115,7 @@ public class CalculatorService {
         logger.debug("Создано кредитное предложение: {}", loanOfferDto);
         return loanOfferDto;
     }
+
 
     /**
      * Рассчитывает аннуитетный ежемесячный платеж.
@@ -144,13 +150,13 @@ public class CalculatorService {
         BigDecimal rate = baseInterestRate;
 
         try {
-            //Применение правил скоринга по страховке
+            // Применение правил скоринга по страховке
             if (scoringData.getIsInsuranceEnabled()) {
                 rate = rate.subtract(INSURANCE_DISCOUNT);
                 scoringData.setAmount(scoringData.getAmount().add(scoringData.getAmount().multiply(INSURANCE_COST_RATE)));
             }
 
-            //Применение правил скоринга по зарплатному клиенту
+            // Применение правил скоринга по зарплатному клиенту
             if (scoringData.getIsSalaryClient()) {
                 rate = rate.subtract(SALARY_CLIENT_DISCOUNT);
             }
@@ -218,11 +224,9 @@ public class CalculatorService {
                 throw new IllegalArgumentException("Отказ: стаж работы менее 18 месяцев или текущий стаж менее 3 месяцев.");
             }
 
-            // **Добавляем проверку на минимальную ставку**
-            BigDecimal minRate = BigDecimal.valueOf(0.001); // Например, 0.1%
-            if (rate.compareTo(BigDecimal.ZERO) <= 0) {
-                rate = minRate;
-                logger.warn("Процентная ставка стала меньше или равна 0. Установлена минимальная ставка: {}", minRate);
+            // Устанавливаем минимальную ставку
+            if (rate.compareTo(BigDecimal.valueOf(0.05)) < 0) {
+                rate = BigDecimal.valueOf(0.05);
             }
 
             // Расчет аннуитентного платежа и ПСК

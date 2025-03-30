@@ -86,6 +86,7 @@ services:
       - "8084:8084"
     depends_on:
       - kafka
+
   gateway:
     build:
       context: .
@@ -98,11 +99,27 @@ services:
       - STATEMENT_URL=http://statement:8083
       - DEAL_URL=http://deal:8081
       - DOSSIER_URL=http://dossier:8084/api/dossier
+      - AUTH_URL=http://auth:8085
     depends_on:
       - deal
       - calculator
       - statement
       - dossier
+
+  auth:
+    build:
+      context: .
+      dockerfile: ./auth/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_DATASOURCE_URL=${DATABASE_URL}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data:

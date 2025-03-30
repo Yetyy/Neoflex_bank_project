@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = CalculatorApplication.class)
+@TestPropertySource(properties = {"base.interest.rate=0.15"}) // Устанавливаем baseInterestRate для тестов
 public class CalculatorServiceTest {
 
     @Autowired
@@ -65,17 +67,17 @@ public class CalculatorServiceTest {
         assertTrue(offers.stream().anyMatch(o -> o.isInsuranceEnabled() && o.isSalaryClient()));
     }
 
-//    @Test
-//    void testGenerateLoanOffersAgeLessThan20() {
-//        request.setBirthDate(LocalDate.now().minusYears(19));
-//        assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
-//    }
-//
-//    @Test
-//    void testGenerateLoanOffersAgeMoreThan65() {
-//        request.setBirthDate(LocalDate.now().minusYears(66));
-//        assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
-//    }
+    @Test
+    void testGenerateLoanOffersAgeLessThan20() {
+        request.setBirthDate(LocalDate.now().minusYears(19));
+        assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
+    }
+
+    @Test
+    void testGenerateLoanOffersAgeMoreThan65() {
+        request.setBirthDate(LocalDate.now().minusYears(66));
+        assertThrows(IllegalArgumentException.class, () -> calculatorService.generateLoanOffers(request));
+    }
 
     @Test
     void testGenerateLoanOffersSortOrder() {
@@ -100,7 +102,11 @@ public class CalculatorServiceTest {
         scoringData.setEmployment(employment);
         CreditDto creditData = calculatorService.calculateCredit(scoringData);
         assertNotNull(creditData);
-        assertTrue(creditData.getRate().compareTo(BigDecimal.valueOf(0.02)) < 0);
+        BigDecimal expectedRate = calculatorService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.02));
+        if (expectedRate.compareTo(BigDecimal.valueOf(0.05)) < 0) {
+            expectedRate = BigDecimal.valueOf(0.05);
+        }
+        assertEquals(0, creditData.getRate().compareTo(expectedRate));
     }
 
     @Test
@@ -110,7 +116,11 @@ public class CalculatorServiceTest {
         scoringData.setEmployment(employment);
         CreditDto creditData = calculatorService.calculateCredit(scoringData);
         assertNotNull(creditData);
-        assertTrue(creditData.getRate().compareTo(BigDecimal.valueOf(0.03)) < 0);
+        BigDecimal expectedRate = calculatorService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03));
+        if (expectedRate.compareTo(BigDecimal.valueOf(0.05)) < 0) {
+            expectedRate = BigDecimal.valueOf(0.05);
+        }
+        assertEquals(0, creditData.getRate().compareTo(expectedRate));
     }
 
     @Test
@@ -124,7 +134,11 @@ public class CalculatorServiceTest {
         scoringData.setMaritalStatus(MaritalStatus.MARRIED);
         CreditDto creditData = calculatorService.calculateCredit(scoringData);
         assertNotNull(creditData);
-        assertTrue(creditData.getRate().compareTo(BigDecimal.valueOf(0.03)) < 0);
+        BigDecimal expectedRate = calculatorService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03));
+        if (expectedRate.compareTo(BigDecimal.valueOf(0.05)) < 0) {
+            expectedRate = BigDecimal.valueOf(0.05);
+        }
+        assertEquals(0, creditData.getRate().compareTo(expectedRate));
     }
 
     @Test
@@ -133,7 +147,11 @@ public class CalculatorServiceTest {
         scoringData.setBirthdate(LocalDate.of(1990, 5, 20)); // 32 years old
         CreditDto creditData = calculatorService.calculateCredit(scoringData);
         assertNotNull(creditData);
-        assertTrue(creditData.getRate().compareTo(BigDecimal.valueOf(0.03)) < 0);
+        BigDecimal expectedRate = calculatorService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03));
+        if (expectedRate.compareTo(BigDecimal.valueOf(0.05)) < 0) {
+            expectedRate = BigDecimal.valueOf(0.05);
+        }
+        assertEquals(0, creditData.getRate().compareTo(expectedRate));
     }
 
     @Test
@@ -142,7 +160,11 @@ public class CalculatorServiceTest {
         scoringData.setBirthdate(LocalDate.of(1993, 5, 20)); // 30 years old
         CreditDto creditData = calculatorService.calculateCredit(scoringData);
         assertNotNull(creditData);
-        assertTrue(creditData.getRate().compareTo(BigDecimal.valueOf(0.03)) < 0);
+        BigDecimal expectedRate = calculatorService.getBaseInterestRate().subtract(BigDecimal.valueOf(0.03));
+        if (expectedRate.compareTo(BigDecimal.valueOf(0.05)) < 0) {
+            expectedRate = BigDecimal.valueOf(0.05);
+        }
+        assertEquals(0, creditData.getRate().compareTo(expectedRate));
     }
 
     @Test
@@ -197,6 +219,7 @@ public class CalculatorServiceTest {
         BigDecimal expectedRateDifference = BigDecimal.valueOf(0.01);
         BigDecimal actualRateDifference = businessOwnerCredit.getRate().subtract(baseCredit.getRate());
         assertEquals(expectedRateDifference, actualRateDifference);
+        assertTrue(businessOwnerCredit.getRate().compareTo(BigDecimal.valueOf(0.05)) >= 0); // Проверка минимальной ставки
     }
 
     @Test
@@ -229,6 +252,7 @@ public class CalculatorServiceTest {
         BigDecimal expectedRateDifference = BigDecimal.valueOf(0.07);
         BigDecimal actualRateDifference = nonBinaryCredit.getRate().subtract(baseCredit.getRate());
         assertEquals(expectedRateDifference, actualRateDifference);
+        assertTrue(nonBinaryCredit.getRate().compareTo(BigDecimal.valueOf(0.05)) >= 0); // Проверка минимальной ставки
     }
 
     @Test
@@ -261,6 +285,7 @@ public class CalculatorServiceTest {
         BigDecimal expectedRateDifference = BigDecimal.valueOf(0.01);
         BigDecimal actualRateDifference = divorcedCredit.getRate().subtract(baseCredit.getRate());
         assertEquals(expectedRateDifference, actualRateDifference);
+        assertTrue(divorcedCredit.getRate().compareTo(BigDecimal.valueOf(0.05)) >= 0); // Проверка минимальной ставки
     }
 
     @Test
@@ -293,6 +318,7 @@ public class CalculatorServiceTest {
         BigDecimal expectedRateDifference = BigDecimal.valueOf(0.02);
         BigDecimal actualRateDifference = widowWidowerCredit.getRate().subtract(baseCredit.getRate());
         assertEquals(expectedRateDifference, actualRateDifference);
+        assertTrue(widowWidowerCredit.getRate().compareTo(BigDecimal.valueOf(0.05)) >= 0); // Проверка минимальной ставки
     }
 
     @Test
@@ -306,5 +332,23 @@ public class CalculatorServiceTest {
         assertNotNull(creditData.getIsInsuranceEnabled());
         assertNotNull(creditData.getIsSalaryClient());
         assertNotNull(creditData.getPaymentSchedule());
+        assertTrue(creditData.getRate().compareTo(BigDecimal.valueOf(0.05)) >= 0); // Проверка минимальной ставки
+    }
+
+    @Test
+    void testCalculateCreditRateEqualsMinimumRate() {
+        // Arrange
+        scoringData.setIsInsuranceEnabled(true);
+        scoringData.setIsSalaryClient(true);
+        EmploymentDto employment = scoringData.getEmployment();
+        employment.setPosition(EmploymentPosition.TOP_MANAGER);
+        scoringData.setEmployment(employment);
+        scoringData.setMaritalStatus(MaritalStatus.MARRIED);
+        scoringData.setGender(Gender.FEMALE);
+        scoringData.setBirthdate(LocalDate.of(1990, 5, 20));
+
+        CreditDto creditData = calculatorService.calculateCredit(scoringData);
+
+        assertEquals(0, BigDecimal.valueOf(0.05).compareTo(creditData.getRate()));
     }
 }

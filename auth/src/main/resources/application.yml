@@ -1,0 +1,27 @@
+server:
+  port: 8085
+spring:
+  application:
+    name: auth
+base:
+  interest:
+    rate: ${BASE_INTEREST_RATE:-0.10}
+logging:
+  level:
+    root: info
+    neoflex.auth: debug
+  file:
+    name: logs/application.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    enabled: true
+jwt:
+  secret: ${SECRET_KEY} # Минимум 256 бит
+  expiration: 3600000 # 1 час в миллисекундах
